@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@/lib/db/compat';
 import { createBroadcast, BroadcastError } from './broadcast-core';
 
 // These assertions all fire in the pure validation prologue, before

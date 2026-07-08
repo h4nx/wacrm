@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -40,10 +40,25 @@ function LoginPageInner() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    // El callback OIDC redirige con ?error=sso cuando el intercambio falla.
+    searchParams.get("error") === "sso" ? t("ssoError") : null,
+  );
   const [loading, setLoading] = useState(false);
+  const [ssoProvider, setSsoProvider] = useState<string | null>(null);
   const router = useRouter();
   const supabase = createClient();
+
+  useEffect(() => {
+    // Muestra el botón de SSO solo si el servidor tiene OIDC configurado
+    // (Vaultex/Keycloak en el ecosistema H&M, o cualquier proveedor OIDC).
+    fetch("/api/auth/providers")
+      .then((r) => r.json())
+      .then((p: { oidc: { name: string } | null }) => {
+        if (p.oidc) setSsoProvider(p.oidc.name);
+      })
+      .catch(() => {});
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -142,6 +157,26 @@ function LoginPageInner() {
               {loading ? t('signingIn') : t('signIn')}
             </Button>
           </form>
+
+          {ssoProvider && (
+            <div className="mt-4 flex flex-col gap-4">
+              <div className="flex items-center gap-3">
+                <div className="h-px flex-1 bg-border" />
+                <span className="text-xs text-muted-foreground">{t("ssoOr")}</span>
+                <div className="h-px flex-1 bg-border" />
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-10 w-full"
+                onClick={() => {
+                  window.location.href = "/api/auth/oidc/login";
+                }}
+              >
+                {t("ssoContinue", { provider: ssoProvider })}
+              </Button>
+            </div>
+          )}
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
             {t('noAccount')}{" "}

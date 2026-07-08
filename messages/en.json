@@ -12,6 +12,9 @@
     "signingIn": "Signing in...",
     "signIn": "Sign in",
     "noAccount": "Don't have an account?",
-    "createAccount": "Create account"
+    "createAccount": "Create account",
+    "ssoOr": "or",
+    "ssoContinue": "Continue with {provider}",
+    "ssoError": "Single sign-on failed. Try again or use your password."
   }
 }
