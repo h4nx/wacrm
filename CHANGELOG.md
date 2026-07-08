@@ -1,13 +1,79 @@
 # Changelog
 
 User-visible changes in `wacrm`. Self-hosters: when pulling an update,
-check this file for any **migration required** notes and apply the
-matching SQL files from `supabase/migrations/` against your Supabase
-project before restarting the app.
+check this file for any **migration required** notes and run
+`npm run db:migrate` against your PostgreSQL before restarting the app
+(entries up to 0.7.0 predate the portable schema and reference the old
+`supabase/migrations/` files, now consolidated into `db/migrations/`).
 
 Versions follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Pre-1.0, `MINOR` bumps cover new modules; `PATCH` bumps cover bug fixes
 and polish.
+
+## [0.8.0] — 2026-07-08 · H&M Business edition
+
+Removes the Supabase dependency entirely: wacrm now runs against **any
+PostgreSQL (≥ 14)** on **any Node host**, and plugs into the H&M
+Business ecosystem (Vaultex SSO, MinIO storage, Kafka events). Full
+architecture notes in [docs/portable-data-layer.md](./docs/portable-data-layer.md).
+
+### Added
+
+- **Portable schema + migration runner.** The 31 Supabase migrations
+  are consolidated into `db/migrations/0001_init.sql` (plus optional
+  `0002` for pgvector and `0003` for realtime triggers), applied with
+  `npm run db:migrate`. All 97 RLS policies are preserved verbatim —
+  authorization still lives in Postgres, with `app_uid()` (a per-
+  transaction GUC) replacing `auth.uid()` and a `wacrm_user` role
+  standing in for the anon key; the pool (schema owner) replaces the
+  service role.
+- **Self-contained auth.** Email/password sessions (scrypt hashes,
+  opaque httpOnly cookie, sliding 30-day expiry), a real
+  `/reset-password` flow (SMTP optional — the link is logged server-
+  side without it), and **optional OIDC SSO** (authorization code +
+  PKCE) against Vaultex/Keycloak or any standard provider, with
+  auto-provisioning and email linking. The login page shows the SSO
+  button only when `OIDC_ISSUER_URL` is configured. Signup now signs
+  you in directly — no email-verification round-trip.
+- **Portable realtime.** Server-sent events (`/api/realtime/sse`) fed
+  by Postgres `LISTEN/NOTIFY` triggers replace Supabase Realtime;
+  account/user-scoped fan-out, and app broadcasts (typing indicators)
+  relayed through `pg_notify` so multiple app instances stay in sync.
+- **Portable file storage.** `/api/storage/<bucket>/<path>` backed by
+  a local-disk driver (default) or any S3-compatible store
+  (MinIO/AWS/R2) via `STORAGE_DRIVER=s3`, keeping the bucket path
+  rules the old storage policies enforced.
+- **Ecosystem events (Kafka).** Every domain event
+  (`message.received`, `message.status_updated`,
+  `conversation.created`) is mirrored to `wacrm.<event>` topics when
+  `KAFKA_BROKERS` is set — a no-op otherwise. Keyed by `account_id`,
+  best-effort by design.
+- **Supabase data migrator.** `scripts/migrate-from-supabase.mjs`
+  copies `auth.users` (keeping GoTrue's bcrypt hashes — users keep
+  their passwords, re-hashed to scrypt on first login) and all 34
+  `public` tables in FK order.
+- **Container deployment.** Self-contained `Dockerfile` (runs
+  migrations, then the standalone server) and a `docker-compose.yml`
+  with Postgres + MinIO + Mailpit; CI now provisions a real Postgres
+  (pgvector) and runs the data-layer integration tests against it.
+
+### Changed
+
+- **Breaking / migration required:** `NEXT_PUBLIC_SUPABASE_URL`,
+  `NEXT_PUBLIC_SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` are
+  gone; the app needs `DATABASE_URL` instead (see
+  `.env.local.example`). Fresh installs: `npm run db:migrate`.
+  Existing Supabase installs: run the data migrator, then copy your
+  storage buckets (see docs/portable-data-layer.md).
+- The data layer keeps the supabase-js query API (`.from().select()`
+  with embedded relations, `.or()` DSL, `.rpc()`, `single()`/counts),
+  now compiled to parameterized SQL in-process — feature code is
+  unchanged; `@supabase/*` packages are removed.
+- `middleware.ts` became `proxy.ts` (Next 16 convention) doing
+  cookie-presence checks only; real session validation moved to the
+  dashboard server layout, route handlers, and RLS.
+- CSP no longer allows `*.supabase.co` — data, realtime and media are
+  all same-origin now.
 
 ## [0.7.0] — 2026-07-02
 
@@ -19,7 +85,7 @@ sidebar — it's no longer tucked inside Settings.
 - **AI Agents (sidebar).** A dedicated `/agents` area with two tabs:
   - **Playground** — a test chat to message your agent and see its
     grounded, multi-turn replies (and where it would hand off to a human)
-    *before* it ever answers a real customer. Runs the exact same path as
+    _before_ it ever answers a real customer. Runs the exact same path as
     the auto-reply bot (knowledge-base retrieval + your provider), and
     works even before you flip the master switch on, so you can try, then
     enable. Backed by `POST /api/ai/playground`.
@@ -95,7 +161,7 @@ returned to the client after saving.
 ## [0.4.0] — 2026-07-01
 
 Completes the public API (#245): **outbound event webhooks** so
-automations can *react* to activity instead of polling.
+automations can _react_ to activity instead of polling.
 
 ### Added
 
@@ -156,11 +222,11 @@ always did.
   - `POST /api/v1/broadcasts` + `GET /api/v1/broadcasts/{id}` — launch a
     template broadcast to a recipient list and poll its progress
     (`broadcasts:send`).
-  All list endpoints share one cursor-pagination contract
-  (`{ data, meta: { next_cursor } }`). No migration required — the
-  scopes already existed and the tables are unchanged. Outbound event
-  webhooks (react to inbound messages) are the remaining roadmap item.
-  See `docs/public-api.md`. ([#245](https://github.com/ArnasDon/wacrm/issues/245))
+    All list endpoints share one cursor-pagination contract
+    (`{ data, meta: { next_cursor } }`). No migration required — the
+    scopes already existed and the tables are unchanged. Outbound event
+    webhooks (react to inbound messages) are the remaining roadmap item.
+    See `docs/public-api.md`. ([#245](https://github.com/ArnasDon/wacrm/issues/245))
 
 ### Changed
 
@@ -199,8 +265,8 @@ always did.
 
 - `supabase/migrations/020_account_sharing_followups.sql` —
   composite partial indexes on `automations(account_id,
-  trigger_type) WHERE is_active` and `flows(account_id) WHERE
-  status='active'` for the engine dispatch hot path; updated
+trigger_type) WHERE is_active` and `flows(account_id) WHERE
+status='active'` for the engine dispatch hot path; updated
   `flow-media` storage RLS to allow account-member writes under
   the new path convention. Idempotent.
 
@@ -391,10 +457,10 @@ when two users on the same instance saved the same WhatsApp
 - **Inbound WhatsApp messages no longer silently disappear** when two
   users have claimed the same `phone_number_id`. Previously the
   webhook used `.single()` to look up the owning config, which errors
-  `PGRST116` for both 0 rows *and* ≥2 rows — the second user's save
+  `PGRST116` for both 0 rows _and_ ≥2 rows — the second user's save
   put the DB into the ≥2-row state and every inbound message was
-  dropped while the log misleadingly reported *"No config found for
-  phone_number_id"*. Three layers of fix: `POST /api/whatsapp/config`
+  dropped while the log misleadingly reported _"No config found for
+  phone_number_id"_. Three layers of fix: `POST /api/whatsapp/config`
   now returns **409** when another user has already claimed the
   number, the webhook lookup distinguishes 0 rows from ≥2 rows and
   logs the conflicting `user_id`s, and a new DB constraint
