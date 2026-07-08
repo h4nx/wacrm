@@ -20,12 +20,13 @@
 
 import { randomUUID } from 'node:crypto';
 
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@/lib/db/compat';
 
 import { decrypt } from '@/lib/whatsapp/encryption';
 import { buildSignatureHeader } from '@/lib/webhooks/sign';
 import { isDeliverableUrl } from '@/lib/webhooks/ssrf';
 import type { WebhookEvent } from '@/lib/webhooks/events';
+import { publishEcosystemEvent } from '@/lib/events/kafka';
 
 /** Per-endpoint HTTP timeout. Kept short — this runs in `after()`. */
 export const DELIVERY_TIMEOUT_MS = 5000;
@@ -49,6 +50,11 @@ export async function dispatchWebhookEvent(
   event: WebhookEvent,
   data: unknown
 ): Promise<void> {
+  // Espejo hacia el bus del ecosistema H&M (Kafka, topic
+  // `wacrm.<event>`). No-op sin KAFKA_BROKERS; best-effort siempre —
+  // e independiente de que la cuenta tenga endpoints HTTP suscritos.
+  void publishEcosystemEvent(event, accountId, data);
+
   try {
     const { data: rows, error } = await db
       .from('webhook_endpoints')

@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { DashboardShell } from "./dashboard-shell";
+import { getSessionUser, SESSION_COOKIE } from "@/lib/auth/session";
 
-// Server layout whose only job is to declare "do not index" metadata
-// for the authed app. robots.ts already disallows these paths at the
-// crawler-level and middleware redirects unauthenticated visitors, so
-// this is belt-and-suspenders — but SEO-critical if a URL ever leaks
-// via a link shared externally.
+// Server layout: declara "no indexar" y es el punto de verificación
+// REAL de sesión (el middleware solo mira presencia de cookie — corre
+// en el edge sin acceso a Postgres). Una cookie muerta rebota aquí.
 export const metadata: Metadata = {
   robots: {
     index: false,
@@ -19,10 +20,15 @@ export const metadata: Metadata = {
   },
 };
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const cookieStore = await cookies();
+  const user = await getSessionUser(cookieStore.get(SESSION_COOKIE)?.value);
+  if (!user) {
+    redirect("/login");
+  }
   return <DashboardShell>{children}</DashboardShell>;
 }

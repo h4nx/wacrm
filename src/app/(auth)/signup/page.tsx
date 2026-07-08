@@ -2,7 +2,7 @@
 
 import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,11 +28,11 @@ export default function SignupPage() {
 
 function SignupPageInner() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   // When the user lands here from `/join/<token>` we carry the
-  // invite token in the query so it survives the signup → email
-  // verification → redirect round-trip. `emailRedirectTo` below
-  // points back at /join/<token> so the user lands on the redeem
-  // step after verifying instead of being dropped on /dashboard.
+  // invite token in the query. Signup now signs the user in
+  // directly (auth propia, sin verificación por email), so on
+  // success we route straight to the redeem step or the dashboard.
   const inviteToken = searchParams.get("invite");
 
   const [fullName, setFullName] = useState("");
@@ -53,20 +53,12 @@ function SignupPageInner() {
       return;
     }
 
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters");
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters");
       return;
     }
 
     setLoading(true);
-
-    // If we have an invite token, point Supabase's verification
-    // email back at the join page so the user can accept after
-    // verifying. Without a token, Supabase uses its default
-    // redirect (the app root).
-    const emailRedirectTo = inviteToken
-      ? `${window.location.origin}/join/${encodeURIComponent(inviteToken)}`
-      : undefined;
 
     const { error } = await supabase.auth.signUp({
       email,
@@ -75,7 +67,6 @@ function SignupPageInner() {
         data: {
           full_name: fullName,
         },
-        ...(emailRedirectTo ? { emailRedirectTo } : {}),
       },
     });
 
@@ -85,8 +76,13 @@ function SignupPageInner() {
       return;
     }
 
+    // La cuenta queda creada y la sesión iniciada en el mismo paso.
     setSuccess(true);
-    setLoading(false);
+    if (inviteToken) {
+      router.push(`/join/${encodeURIComponent(inviteToken)}`);
+    } else {
+      router.push("/dashboard");
+    }
   };
 
   if (success) {
@@ -98,12 +94,12 @@ function SignupPageInner() {
               <CheckCircle className="h-6 w-6 text-primary" />
             </div>
             <CardTitle className="text-xl text-foreground">
-              Check your email
+              Account created
             </CardTitle>
             <CardDescription className="text-muted-foreground">
-              We&apos;ve sent a confirmation link to{" "}
-              <span className="text-foreground">{email}</span>. Please check your
-              inbox and click the link to verify your account.
+              You&apos;re signed in as{" "}
+              <span className="text-foreground">{email}</span>. Taking you to
+              your dashboard…
             </CardDescription>
           </CardHeader>
           <CardContent>

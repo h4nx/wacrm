@@ -16,17 +16,27 @@ jobs:
   check:
     name: Lint, typecheck, test, build
     runs-on: ubuntu-latest
-    # Dummy env vars so `next build` doesn't fail when it reads the
-    # public Supabase config at build time. These never leave CI and
-    # never hit a real service — they just satisfy the `!` non-null
-    # assertions in the client factories. ENCRYPTION_KEY and
-    # META_APP_SECRET are read at module-load by lib/whatsapp/*; the
-    # test suite asserts behaviour around these values, so any non-
-    # empty placeholder works as long as it stays consistent with
-    # vitest.config.ts.
+    # Postgres real (con pgvector) para las migraciones y los tests de
+    # integración de la capa de datos — el mismo esquema que producción.
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: wacrm
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d wacrm"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    # ENCRYPTION_KEY / META_APP_SECRET se leen al cargar módulos en
+    # lib/whatsapp/*; placeholders consistentes con vitest.config.ts.
     env:
-      NEXT_PUBLIC_SUPABASE_URL: https://ci.example.supabase.co
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-dummy-anon-key
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/wacrm
+      TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/wacrm
       ENCRYPTION_KEY: '0000000000000000000000000000000000000000000000000000000000000000'
       META_APP_SECRET: 'ci-dummy-meta-secret'
     steps:
@@ -39,6 +49,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Migrate database
+        run: npm run db:migrate
 
       - name: Lint
         run: npm run lint

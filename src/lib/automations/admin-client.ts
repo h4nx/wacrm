@@ -1,16 +1,9 @@
-import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { createServiceClient, type ServiceClient } from '@/lib/supabase/server'
 
-// Lazy, shared service-role client for automation engine work.
-// Mirrors the pattern used by the webhook handler
-// (src/app/api/whatsapp/webhook/route.ts).
-let _adminClient: SupabaseClient | null = null
-
-export function supabaseAdmin(): SupabaseClient {
-  if (!_adminClient) {
-    _adminClient = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    )
-  }
-  return _adminClient
+// Cliente compartido con privilegios de servicio (antes: service-role
+// de Supabase). El webhook entrante no tiene usuario en sesión, así
+// que el motor lee config/estado y envía con el dueño del esquema —
+// las políticas RLS no aplican en este camino, igual que antes.
+export function supabaseAdmin(): ServiceClient {
+  return createServiceClient()
 }
