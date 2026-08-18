@@ -1,4 +1,4 @@
-# wacrm — CRM para WhatsApp · H&M Business
+# Convix — CRM para WhatsApp · H&M Business
 
 > CRM autoalojable para WhatsApp Business — inbox compartido,
 > contactos, pipelines de venta, broadcasts y automatizaciones
@@ -7,14 +7,14 @@
 > y **cualquier servidor Node** — sin dependencias SaaS.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-violet.svg)](./LICENSE)
-[![CI](https://github.com/ArnasDon/wacrm/actions/workflows/ci.yml/badge.svg)](https://github.com/ArnasDon/wacrm/actions/workflows/ci.yml)
+[![CI](https://github.com/h4nx/convix/actions/workflows/ci.yml/badge.svg)](https://github.com/h4nx/convix/actions/workflows/ci.yml)
 [![Next.js 16](https://img.shields.io/badge/Next.js-16-black?logo=nextdotjs)](https://nextjs.org)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14%2B-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org)
 
-Fork del template [ArnasDon/wacrm](https://github.com/ArnasDon/wacrm)
-(MIT), reajustado para el ecosistema H&M Business: se eliminó la
-dependencia de Supabase (ver
-[docs/portable-data-layer.md](./docs/portable-data-layer.md)) y se
+**Convix** es un fork del template
+[ArnasDon/wacrm](https://github.com/ArnasDon/wacrm) (MIT), reajustado
+para el ecosistema H&M Business: se eliminó la dependencia de Supabase
+(ver [docs/portable-data-layer.md](./docs/portable-data-layer.md)) y se
 añadió SSO OIDC opcional contra Vaultex/Keycloak.
 
 ## Qué incluye
@@ -50,7 +50,7 @@ añadió SSO OIDC opcional contra Vaultex/Keycloak.
 
 ```bash
 git clone <tu-fork>
-cd Wacrm
+cd Convix
 npm install
 
 docker compose up -d db        # PostgreSQL 16 + pgvector en :5432
@@ -76,6 +76,18 @@ contenedor: `npm run build && npm start` en cualquier Node ≥ 20.
 
 Variables de entorno: ver [.env.local.example](./.env.local.example).
 
+Para un stack local completo (app en :1000 + Postgres + Kafka + MinIO
++ Mailpit) bajo el proyecto Docker `convix-dev`:
+
+```bash
+docker compose -p convix-dev -f docker-compose.local.yml \
+  --env-file .env.convix-dev up -d --build
+```
+
+Antes de cada despliegue a producción — y especialmente si vienes de
+una instancia con los nombres `wacrm` viejos — repasa
+[docs/production-checklist.md](./docs/production-checklist.md).
+
 ## Ecosistema H&M Business
 
 - **SSO**: define `OIDC_ISSUER_URL` / `OIDC_CLIENT_ID` /
@@ -83,8 +95,10 @@ Variables de entorno: ver [.env.local.example](./.env.local.example).
   el login muestra "Continue with Vaultex". Sin esas variables, la
   app funciona standalone con email/contraseña.
 - **Storage**: `STORAGE_DRIVER=s3` contra el MinIO compartido.
-- **Eventos** (fase 2): los puntos de emisión para Kafka (`wacrm.*`)
-  están identificados en
+- **Eventos**: con `KAFKA_BROKERS` definido, cada evento de dominio se
+  publica en `convix.<evento>` (message.received,
+  message.status_updated, …) con el `account_id` como clave. Sin la
+  variable es un no-op. Detalle en
   [docs/portable-data-layer.md](./docs/portable-data-layer.md).
 
 ## Stack
@@ -106,4 +120,6 @@ scrypt, sesiones opacas hasheadas. Reportes: ver
 
 ## Licencia
 
-[MIT](./LICENSE) — upstream: [ArnasDon/wacrm](https://github.com/ArnasDon/wacrm).
+[MIT](./LICENSE) — Convix es un fork de
+[ArnasDon/wacrm](https://github.com/ArnasDon/wacrm) (MIT), cuya
+atribución se conserva.

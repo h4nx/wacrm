@@ -22,7 +22,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { Loader2, AlertTriangle } from 'lucide-react';
 
 interface ContactFormProps {
@@ -67,6 +66,10 @@ export function ContactForm({
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [loadingTags, setLoadingTags] = useState(false);
 
+  // Seed-on-open only: `contactTags` defaults to a fresh `[]` and
+  // `fetchTags` isn't memoized, so both get a new identity every
+  // render. Adding them here would re-run this on every keystroke
+  // while the dialog is open and wipe whatever the user just typed.
   useEffect(() => {
     if (open) {
       setName(contact?.name ?? '');
@@ -77,6 +80,7 @@ export function ContactForm({
       setDupMatch(null);
       fetchTags();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, contact]);
 
   // Look up an existing contact with this number (new contacts only).

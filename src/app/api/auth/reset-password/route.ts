@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import { NextResponse, type NextRequest } from 'next/server';
+import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import {
   consumePasswordResetToken,
   createSession,
@@ -20,6 +21,14 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     );
   }
+
+  // Belt-and-braces alongside the other /api/auth/* routes — the
+  // 256-bit token itself isn't brute-forceable, but a lone unlimited
+  // endpoint in this family is the kind of thing an audit flags.
+  const ip =
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'local';
+  const limit = checkRateLimit(`auth-reset:${ip}`, { limit: 10, windowMs: 60_000 });
+  if (!limit.success) return rateLimitResponse(limit);
 
   const userId = await consumePasswordResetToken(body.token);
   if (!userId) {

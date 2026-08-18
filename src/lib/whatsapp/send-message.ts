@@ -375,7 +375,7 @@ export async function sendMessageToConversation(
   }
 
   if (workingPhone !== sanitizedPhone) {
-    console.log(
+    console.info(
       `[send-message] Auto-corrected contact phone: ${sanitizedPhone} → ${workingPhone}`
     );
     await db

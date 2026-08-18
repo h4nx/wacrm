@@ -49,7 +49,7 @@ export function SettingsOverview({
   const [whatsappLoading, setWhatsappLoading] = useState(true);
 
   useEffect(() => {
-    if (!user || !accountId) return;
+    if (!user?.id || !accountId) return;
     let cancelled = false;
     const supabase = createClient();
     const userId = user.id;
