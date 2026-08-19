@@ -9,8 +9,10 @@
  * instead of a runtime rejection from Meta.
  */
 
-const META_API_VERSION = 'v21.0'
-const META_API_BASE = `https://graph.facebook.com/${META_API_VERSION}`
+// Configurable so a Graph API deprecation is an env var change + restart,
+// not a code edit — Meta sunsets old versions on a rolling schedule.
+const META_API_VERSION = process.env.META_API_VERSION || 'v25.0'
+export const META_API_BASE = `https://graph.facebook.com/${META_API_VERSION}`
 
 export interface MetaSendResult {
   messageId: string
