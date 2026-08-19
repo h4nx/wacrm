@@ -35,8 +35,8 @@ export async function GET(request: NextRequest) {
     path: '/',
     maxAge: 600,
   };
-  cookieStore.set('wacrm-oidc-verifier', codeVerifier, flowCookie);
-  cookieStore.set('wacrm-oidc-state', state, flowCookie);
+  cookieStore.set('convix-oidc-verifier', codeVerifier, flowCookie);
+  cookieStore.set('convix-oidc-state', state, flowCookie);
 
   return NextResponse.redirect(authUrl);
 }

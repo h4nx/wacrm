@@ -35,11 +35,11 @@ describe('generateApiKey', () => {
 
 describe('hashApiKey', () => {
   it('is deterministic', () => {
-    expect(hashApiKey('wacrm_live_abc')).toBe(hashApiKey('wacrm_live_abc'));
+    expect(hashApiKey('convix_live_abc')).toBe(hashApiKey('convix_live_abc'));
   });
 
   it('differs for different inputs', () => {
-    expect(hashApiKey('wacrm_live_abc')).not.toBe(hashApiKey('wacrm_live_abd'));
+    expect(hashApiKey('convix_live_abc')).not.toBe(hashApiKey('convix_live_abd'));
   });
 });
 
@@ -57,7 +57,7 @@ describe('looksLikeApiKey', () => {
 
 describe('timingSafeHexEqual', () => {
   it('is true for identical digests', () => {
-    const h = hashApiKey('wacrm_live_xyz');
+    const h = hashApiKey('convix_live_xyz');
     expect(timingSafeHexEqual(h, h)).toBe(true);
   });
 

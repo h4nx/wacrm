@@ -30,7 +30,7 @@ export async function sendMail(options: {
       : undefined,
   });
   await transport.sendMail({
-    from: process.env.SMTP_FROM ?? 'wacrm <no-reply@localhost>',
+    from: process.env.SMTP_FROM ?? 'Convix <no-reply@localhost>',
     ...options,
   });
 }

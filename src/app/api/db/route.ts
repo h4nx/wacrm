@@ -2,7 +2,7 @@
  * Transporte HTTP de la capa de datos para componentes cliente.
  *
  * El navegador manda un QueryDescriptor; aquí se ejecuta SIEMPRE con
- * el contexto del usuario de la sesión (SET LOCAL ROLE wacrm_user +
+ * el contexto del usuario de la sesión (SET LOCAL ROLE convix_user +
  * GUC app.user_id), así que RLS autoriza cada fila igual que cuando
  * el navegador hablaba con PostgREST usando el anon key de Supabase.
  * Los RPC expuestos al navegador pasan por allowlist.

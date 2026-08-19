@@ -36,7 +36,7 @@ types.setTypeParser(OID.INT8, (v) => parseInt(v, 10));
  * migraciones): las rutas de servicio consultan con sus privilegios
  * (equivalente al service-role de Supabase, RLS bypass por ownership),
  * y las consultas iniciadas por un usuario bajan a `SET LOCAL ROLE
- * wacrm_user` donde RLS sí aplica.
+ * convix_user` donde RLS sí aplica.
  */
 let pool: Pool | null = null;
 

@@ -2,8 +2,8 @@
  * Broker realtime del servidor.
  *
  * Mantiene UNA conexión Postgres dedicada en LISTEN sobre los canales
- * wacrm_changes (triggers notify_change — ver migración 0003) y
- * wacrm_broadcast (mensajes de aplicación). Rehidrata la fila con los
+ * convix_changes (triggers notify_change — ver migración 0003) y
+ * convix_broadcast (mensajes de aplicación). Rehidrata la fila con los
  * privilegios del pool y reparte el evento solo a los suscriptores SSE
  * autorizados: mismo account, y para notifications además mismo user.
  *
@@ -59,8 +59,8 @@ class RealtimeBroker {
         void this.handleNotification(msg.channel, msg.payload ?? '');
       });
       await client.connect();
-      await client.query('LISTEN wacrm_changes');
-      await client.query('LISTEN wacrm_broadcast');
+      await client.query('LISTEN convix_changes');
+      await client.query('LISTEN convix_broadcast');
       this.listener = client;
       this.reconnectDelayMs = 1000;
     } catch (err) {
@@ -93,7 +93,7 @@ class RealtimeBroker {
       return;
     }
 
-    if (channel === 'wacrm_broadcast') {
+    if (channel === 'convix_broadcast') {
       const b = payload as {
         channel: string;
         event: string;
@@ -169,10 +169,10 @@ class RealtimeBroker {
 
 // Singleton resistente a HMR en dev.
 const globalBroker = globalThis as unknown as {
-  __wacrmBroker?: RealtimeBroker;
+  __convixBroker?: RealtimeBroker;
 };
 
 export function getBroker(): RealtimeBroker {
-  globalBroker.__wacrmBroker ??= new RealtimeBroker();
-  return globalBroker.__wacrmBroker;
+  globalBroker.__convixBroker ??= new RealtimeBroker();
+  return globalBroker.__convixBroker;
 }

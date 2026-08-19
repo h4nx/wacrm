@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Migra los DATOS de una instalación wacrm sobre Supabase a la base
+ * Migra los DATOS de una instalación convix sobre Supabase a la base
  * portable (esquema de db/migrations ya aplicado con db:migrate).
  *
  *   SOURCE_DATABASE_URL=postgres://postgres:...@db.<proyecto>.supabase.co:5432/postgres \

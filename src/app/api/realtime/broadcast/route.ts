@@ -46,6 +46,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Payload too large' }, { status: 413 });
   }
 
-  await getPool().query(`SELECT pg_notify('wacrm_broadcast', $1)`, [message]);
+  await getPool().query(`SELECT pg_notify('convix_broadcast', $1)`, [message]);
   return NextResponse.json({ ok: true });
 }

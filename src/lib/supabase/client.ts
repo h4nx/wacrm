@@ -2,7 +2,7 @@
  * Cliente de datos del NAVEGADOR — mantiene la firma histórica
  * `createClient()` (de la era Supabase) pero ya no habla con Supabase:
  *
- *  - .from()/.rpc()  → POST /api/db (RLS en Postgres vía wacrm_user)
+ *  - .from()/.rpc()  → POST /api/db (RLS en Postgres vía convix_user)
  *  - .auth           → /api/auth/* (sesiones propias en cookie httpOnly)
  *  - .channel()      → SSE /api/realtime/sse (LISTEN/NOTIFY)
  *  - .storage        → /api/storage/* (S3/MinIO o disco local)
@@ -37,7 +37,7 @@ async function httpExecutor(descriptor: Descriptor): Promise<DbResult> {
         message: err instanceof Error ? err.message : 'network error',
         details: null,
         hint: null,
-        code: 'WACRM_FETCH',
+        code: 'CONVIX_FETCH',
       },
       count: null,
       status: 0,
@@ -52,7 +52,7 @@ async function httpExecutor(descriptor: Descriptor): Promise<DbResult> {
         message: `Respuesta inválida de /api/db (HTTP ${response.status})`,
         details: null,
         hint: null,
-        code: 'WACRM_FETCH',
+        code: 'CONVIX_FETCH',
       },
       count: null,
       status: response.status,

@@ -16,10 +16,10 @@ export async function GET(request: NextRequest) {
     );
   }
   const cookieStore = await cookies();
-  const verifier = cookieStore.get('wacrm-oidc-verifier')?.value;
-  const expectedState = cookieStore.get('wacrm-oidc-state')?.value;
-  cookieStore.delete('wacrm-oidc-verifier');
-  cookieStore.delete('wacrm-oidc-state');
+  const verifier = cookieStore.get('convix-oidc-verifier')?.value;
+  const expectedState = cookieStore.get('convix-oidc-state')?.value;
+  cookieStore.delete('convix-oidc-verifier');
+  cookieStore.delete('convix-oidc-state');
 
   const loginUrl = new URL('/login', request.nextUrl.origin);
   if (!verifier || !expectedState) {

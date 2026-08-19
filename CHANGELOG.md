@@ -1,6 +1,7 @@
 # Changelog
 
-User-visible changes in `wacrm`. Self-hosters: when pulling an update,
+User-visible changes in **Convix** (formerly `wacrm`). Self-hosters:
+when pulling an update,
 check this file for any **migration required** notes and run
 `npm run db:migrate` against your PostgreSQL before restarting the app
 (entries up to 0.7.0 predate the portable schema and reference the old
@@ -10,9 +11,57 @@ Versions follow [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Pre-1.0, `MINOR` bumps cover new modules; `PATCH` bumps cover bug fixes
 and polish.
 
+## [0.9.0] — 2026-07-12 · Convix
+
+The product now has a name: **Convix** (following the H&M Business
+naming family — Orbix, Xentry, Partex, Sealix, Vaultex). This is a
+**full rename**, applied before any production deployment — every
+`wacrm` identifier is gone. **Migration required** for pre-release
+installs (none are known to exist): easiest is a fresh
+`npm run db:migrate` against a clean database.
+
+### Changed
+
+- **Rebrand to Convix** across every user-facing surface: page titles,
+  in-app copy, invite emails/messages, default SMTP `From`, README,
+  public-API docs, and the GitHub repo (now `h4nx/convix`; the old URL
+  redirects).
+- **API key prefix** is now `convix_live_` (was `wacrm_live_`); webhook
+  deliveries are signed with `X-Convix-Signature` (plus
+  `X-Convix-Event` / `X-Convix-Webhook-Id`). Keys minted before this
+  release stop validating — regenerate them from Settings → API keys.
+- **Kafka defaults**: topics publish as `convix.<event>` and the
+  default client id is `convix` (both still overridable via
+  `KAFKA_TOPIC_PREFIX` / `KAFKA_CLIENT_ID`).
+- **Canonical domain is `convix.one`**: the invite-link fallback and
+  the example values in `.env.local.example` now use it (was the
+  upstream's `wacrm.tech`).
+- **Internal identifiers renamed too** (safe pre-production): session
+  cookie `convix-session`, OIDC flow cookies, Postgres role
+  `convix_user`, NOTIFY channels `convix_changes` / `convix_broadcast`,
+  localStorage keys (`convix.theme`, …), error codes `CONVIX_*`, and
+  the default DB / bucket / Docker volume names. Existing sessions,
+  saved theme choices, and databases created from the old migrations
+  are not carried over.
+
+### Added
+
+- **`docker-compose.local.yml`** — full local stack (app + Postgres +
+  Kafka + MinIO + Mailpit) under the `convix-dev` compose project,
+  with the app on port 1000 and admin UIs on 1001/1002; secrets live
+  in the gitignored `.env.convix-dev`.
+
+### Fixed
+
+- **`.dockerignore` added** — `docker build` used to copy the host's
+  `node_modules` (macOS binaries) into the Linux image, overwriting
+  the ones installed inside the build stage.
+- Dashboard date-util tests no longer fail in timezones behind UTC
+  (they parsed date-only ISO strings as UTC midnight).
+
 ## [0.8.0] — 2026-07-08 · H&M Business edition
 
-Removes the Supabase dependency entirely: wacrm now runs against **any
+Removes the Supabase dependency entirely: convix now runs against **any
 PostgreSQL (≥ 14)** on **any Node host**, and plugs into the H&M
 Business ecosystem (Vaultex SSO, MinIO storage, Kafka events). Full
 architecture notes in [docs/portable-data-layer.md](./docs/portable-data-layer.md).
@@ -24,7 +73,7 @@ architecture notes in [docs/portable-data-layer.md](./docs/portable-data-layer.m
   `0002` for pgvector and `0003` for realtime triggers), applied with
   `npm run db:migrate`. All 97 RLS policies are preserved verbatim —
   authorization still lives in Postgres, with `app_uid()` (a per-
-  transaction GUC) replacing `auth.uid()` and a `wacrm_user` role
+  transaction GUC) replacing `auth.uid()` and a `convix_user` role
   standing in for the anon key; the pool (schema owner) replaces the
   service role.
 - **Self-contained auth.** Email/password sessions (scrypt hashes,
@@ -45,7 +94,7 @@ architecture notes in [docs/portable-data-layer.md](./docs/portable-data-layer.m
   rules the old storage policies enforced.
 - **Ecosystem events (Kafka).** Every domain event
   (`message.received`, `message.status_updated`,
-  `conversation.created`) is mirrored to `wacrm.<event>` topics when
+  `conversation.created`) is mirrored to `convix.<event>` topics when
   `KAFKA_BROKERS` is set — a no-op otherwise. Keyed by `account_id`,
   best-effort by design.
 - **Supabase data migrator.** `scripts/migrate-from-supabase.mjs`
@@ -126,9 +175,9 @@ relevant excerpts are retrieved into every draft and auto-reply.
 
 Adds the **AI reply assistant** — bring-your-own-key. Each account
 pastes its own OpenAI or Anthropic key under **Settings → AI
-Assistant**; wacrm calls the provider directly with that key, so
+Assistant**; convix calls the provider directly with that key, so
 there's no per-seat AI fee and your conversation data never leaves
-your own infrastructure for a wacrm-run service. The key is stored
+your own infrastructure for a convix-run service. The key is stored
 AES-256-GCM-encrypted at rest (same as WhatsApp tokens) and never
 returned to the client after saving.
 
@@ -170,7 +219,7 @@ automations can _react_ to activity instead of polling.
   happens in your account — `message.received`, `message.status_updated`,
   or `conversation.created`. Manage endpoints with
   `GET/POST /api/v1/webhooks` and `GET/PATCH/DELETE /api/v1/webhooks/{id}`.
-  Each delivery is signed with an `X-Wacrm-Signature`
+  Each delivery is signed with an `X-Convix-Signature`
   (HMAC-SHA256 over `timestamp.body`) so receivers can verify
   authenticity and reject replays; the signing secret is returned once
   at creation and stored encrypted. Delivery is best-effort — an
@@ -182,7 +231,7 @@ automations can _react_ to activity instead of polling.
 
 ## [0.3.0] — 2026-07-01
 
-Multi-user accounts ship. Every wacrm install is multi-tenant on the
+Multi-user accounts ship. Every convix install is multi-tenant on the
 database side: a single user's signup creates a fresh "account", and
 every row is scoped to that account rather than to the user directly.
 This release also opens the user-visible **Members** surface — invite
@@ -197,7 +246,7 @@ always did.
 ### Added
 
 - **Public REST API (`/api/v1`) — groundwork.** A scoped, revocable
-  **API key** system so you can drive wacrm from your own scripts and
+  **API key** system so you can drive convix from your own scripts and
   automations. Create keys under **Settings → API keys** (admin+),
   grant only the scopes each integration needs, and authenticate with
   `Authorization: Bearer <key>`. Keys are account-scoped and stored
@@ -491,7 +540,7 @@ Apply against your Supabase project before deploying this version:
 
 ### Note on multi-user setups
 
-wacrm is intentionally **single-tenant per WhatsApp number**. RLS on
+convix is intentionally **single-tenant per WhatsApp number**. RLS on
 `conversations`/`messages` is `auth.uid() = user_id`, so a second
 user physically cannot read messages routed to a different owner —
 two users sharing one number was never supported. If you need

@@ -2,7 +2,7 @@
  * Ejecutor de descriptores en el servidor.
  *
  * Cada ejecución corre en una transacción. Con `userId` presente baja
- * a `SET LOCAL ROLE wacrm_user` y fija el GUC `app.user_id`, de modo
+ * a `SET LOCAL ROLE convix_user` y fija el GUC `app.user_id`, de modo
  * que las políticas RLS (idénticas a las de Supabase, con app_uid()
  * en lugar de auth.uid()) autorizan cada fila. Sin `userId` la
  * conexión conserva los privilegios del dueño del esquema — es el
@@ -36,7 +36,7 @@ function toDbError(err: unknown): DbError {
       message: err.message,
       details: null,
       hint: null,
-      code: 'WACRM_COMPILE',
+      code: 'CONVIX_COMPILE',
     };
   }
   const pg = err as Partial<DatabaseError> & { message?: string };
@@ -44,7 +44,7 @@ function toDbError(err: unknown): DbError {
     message: pg.message ?? 'database error',
     details: (pg.detail as string | undefined) ?? null,
     hint: (pg.hint as string | undefined) ?? null,
-    code: (pg.code as string | undefined) ?? 'WACRM_UNKNOWN',
+    code: (pg.code as string | undefined) ?? 'CONVIX_UNKNOWN',
   };
 }
 
@@ -155,7 +155,7 @@ export async function executeDescriptor(
   try {
     await client.query('BEGIN');
     if (ctx.userId) {
-      await client.query('SET LOCAL ROLE wacrm_user');
+      await client.query('SET LOCAL ROLE convix_user');
       await client.query(`SELECT set_config('app.user_id', $1, true)`, [
         ctx.userId,
       ]);

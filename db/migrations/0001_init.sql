@@ -1,8 +1,8 @@
 -- ============================================================
--- wacrm — Esquema base portable (PostgreSQL >= 14, sin Supabase)
+-- convix — Esquema base portable (PostgreSQL >= 14, sin Supabase)
 -- Generado a partir de las migraciones originales 001–031.
 -- Requiere que DATABASE_URL apunte a un usuario con permiso
--- CREATEROLE (se crea el rol sin login `wacrm_user` para RLS).
+-- CREATEROLE (se crea el rol sin login `convix_user` para RLS).
 -- ============================================================
 
 -- El esquema define funciones SQL antes que sus tablas (orden de pg_dump).
@@ -54,7 +54,7 @@ CREATE TABLE public.oidc_identities (
 );
 
 -- Tablas de identidad: RLS activado sin políticas = solo el owner
--- (la capa server) puede tocarlas. wacrm_user no recibe GRANT.
+-- (la capa server) puede tocarlas. convix_user no recibe GRANT.
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.password_reset_tokens ENABLE ROW LEVEL SECURITY;
@@ -3803,26 +3803,26 @@ CREATE TRIGGER on_user_created
 
 -- ------------------------------------------------------------
 -- Rol de aplicación: las consultas iniciadas por un usuario corren
--- como wacrm_user con RLS; el pool (owner de las tablas) las evade
+-- como convix_user con RLS; el pool (owner de las tablas) las evade
 -- para las rutas de servicio (webhook, automatizaciones, API keys).
 -- ------------------------------------------------------------
 DO $$
 BEGIN
-  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'wacrm_user') THEN
-    CREATE ROLE wacrm_user NOLOGIN;
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'convix_user') THEN
+    CREATE ROLE convix_user NOLOGIN;
   END IF;
 END $$;
 
-GRANT wacrm_user TO CURRENT_USER;
-GRANT USAGE ON SCHEMA public TO wacrm_user;
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO wacrm_user;
-GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO wacrm_user;
-GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO wacrm_user;
+GRANT convix_user TO CURRENT_USER;
+GRANT USAGE ON SCHEMA public TO convix_user;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO convix_user;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO convix_user;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO convix_user;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
-  GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO wacrm_user;
+  GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO convix_user;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
-  GRANT EXECUTE ON FUNCTIONS TO wacrm_user;
+  GRANT EXECUTE ON FUNCTIONS TO convix_user;
 
 -- Las tablas de identidad quedan fuera del alcance del rol de app.
 REVOKE ALL ON public.users, public.sessions,
-  public.password_reset_tokens, public.oidc_identities FROM wacrm_user;
+  public.password_reset_tokens, public.oidc_identities FROM convix_user;

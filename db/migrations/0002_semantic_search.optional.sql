@@ -1,5 +1,5 @@
 -- ============================================================
--- wacrm — Búsqueda semántica (OPCIONAL: requiere pgvector)
+-- convix — Búsqueda semántica (OPCIONAL: requiere pgvector)
 -- Si la extensión no está disponible, el runner de migraciones la
 -- omite con un aviso y la base de conocimiento usa solo full-text.
 -- ============================================================
@@ -26,4 +26,4 @@ CREATE FUNCTION public.match_ai_knowledge_semantic(p_account_id uuid, p_query_em
   LIMIT GREATEST(p_match_count, 0);
 $$;
 
-GRANT EXECUTE ON FUNCTION public.match_ai_knowledge_semantic(uuid, text, integer) TO wacrm_user;
+GRANT EXECUTE ON FUNCTION public.match_ai_knowledge_semantic(uuid, text, integer) TO convix_user;

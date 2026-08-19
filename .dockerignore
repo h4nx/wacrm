@@ -1,0 +1,14 @@
+.git
+.github
+.next
+node_modules
+data
+db/.DS_Store
+.env*
+!.env.local.example
+tsconfig.tsbuildinfo
+npm-debug.log*
+Dockerfile
+docker-compose*.yml
+.dockerignore
+.claude

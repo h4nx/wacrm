@@ -15,7 +15,7 @@ describe.skipIf(!BROKERS)('eventos del ecosistema (Kafka real)', () => {
   let consumer: any;
   const received: { topic: string; key: string; value: string }[] = [];
   const suffix = Date.now();
-  const prefix = `wacrm-test-${suffix}`;
+  const prefix = `convix-test-${suffix}`;
 
   beforeAll(async () => {
     process.env.KAFKA_BROKERS = BROKERS;
@@ -23,7 +23,7 @@ describe.skipIf(!BROKERS)('eventos del ecosistema (Kafka real)', () => {
 
     const { Kafka, logLevel } = await import('kafkajs');
     const kafka = new Kafka({
-      clientId: 'wacrm-test-consumer',
+      clientId: 'convix-test-consumer',
       brokers: BROKERS!.split(','),
       logLevel: logLevel.NOTHING,
     });
@@ -36,7 +36,7 @@ describe.skipIf(!BROKERS)('eventos del ecosistema (Kafka real)', () => {
     });
     await admin.disconnect();
 
-    consumer = kafka.consumer({ groupId: `wacrm-test-${suffix}` });
+    consumer = kafka.consumer({ groupId: `convix-test-${suffix}` });
     await consumer.connect();
     await consumer.subscribe({
       topic: `${prefix}.message.received`,
@@ -58,7 +58,7 @@ describe.skipIf(!BROKERS)('eventos del ecosistema (Kafka real)', () => {
     await consumer?.disconnect();
   });
 
-  it('publica wacrm.<evento> con clave account_id y sobre estándar', async () => {
+  it('publica convix.<evento> con clave account_id y sobre estándar', async () => {
     const { publishEcosystemEvent } = await import('./kafka');
     const ok = await publishEcosystemEvent('message.received', 'acc-123', {
       conversation_id: 'conv-1',

@@ -3,7 +3,7 @@
  * `createClient()` pero ejecuta directo contra Postgres.
  *
  * - `createClient()`: contexto del usuario de la sesión (cookie). Cada
- *   query corre con SET LOCAL ROLE wacrm_user + GUC app.user_id, así
+ *   query corre con SET LOCAL ROLE convix_user + GUC app.user_id, así
  *   que RLS autoriza igual que en la era Supabase.
  * - `createServiceClient()`: privilegios de servicio (dueño del
  *   esquema, sin RLS) — reemplaza al service-role key. Solo para

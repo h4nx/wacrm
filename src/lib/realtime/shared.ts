@@ -23,7 +23,7 @@ export interface BroadcastEvent {
 
 export type RealtimeEvent = ChangeEvent | BroadcastEvent;
 
-/** Payload del pg_notify('wacrm_changes') emitido por los triggers. */
+/** Payload del pg_notify('convix_changes') emitido por los triggers. */
 export interface NotifyPayload {
   table: string;
   op: ChangeOp;

@@ -2,7 +2,7 @@
  * SSO OIDC opcional (Vaultex/Keycloak en el ecosistema H&M Business,
  * o cualquier proveedor OIDC estándar). Se activa definiendo:
  *
- *   OIDC_ISSUER_URL     p.ej. https://sso.hmbusiness.dev/realms/wacrm
+ *   OIDC_ISSUER_URL     p.ej. https://sso.hmbusiness.dev/realms/convix
  *   OIDC_CLIENT_ID
  *   OIDC_CLIENT_SECRET  (opcional con PKCE si el cliente es público)
  *   OIDC_PROVIDER_NAME  etiqueta del botón de login (default "SSO")

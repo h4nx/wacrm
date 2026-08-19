@@ -1,5 +1,5 @@
 /**
- * Capa de datos portable de wacrm.
+ * Capa de datos portable de convix.
  *
  * El builder (src/lib/db/builder.ts) produce un *descriptor* JSON del
  * query — el mismo objeto se ejecuta directo contra Postgres en el
@@ -7,7 +7,7 @@
  * navegador. La API imita el subconjunto de supabase-js/PostgREST que
  * usa la app, de modo que el código de features no cambió al salir de
  * Supabase; la autorización la sigue aplicando RLS en Postgres (rol
- * wacrm_user + GUC app.user_id — ver db/migrations/0001_init.sql).
+ * convix_user + GUC app.user_id — ver db/migrations/0001_init.sql).
  */
 
 export type FilterOp =

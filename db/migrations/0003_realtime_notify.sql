@@ -1,5 +1,5 @@
 -- ============================================================
--- wacrm — Realtime portable via LISTEN/NOTIFY
+-- convix — Realtime portable via LISTEN/NOTIFY
 -- Payload mínimo (ids + alcance); el broker SSE del servidor
 -- rehidrata la fila y la reparte a los suscriptores autorizados.
 -- ============================================================
@@ -21,7 +21,7 @@ BEGIN
     v_account_id := (v_row ->> 'account_id')::uuid;
   END IF;
 
-  PERFORM pg_notify('wacrm_changes', json_build_object(
+  PERFORM pg_notify('convix_changes', json_build_object(
     'table', TG_TABLE_NAME,
     'op', TG_OP,
     'id', COALESCE(v_row ->> 'id', v_row ->> 'user_id'),

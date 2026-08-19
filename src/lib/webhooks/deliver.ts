@@ -51,7 +51,7 @@ export async function dispatchWebhookEvent(
   data: unknown
 ): Promise<void> {
   // Espejo hacia el bus del ecosistema H&M (Kafka, topic
-  // `wacrm.<event>`). No-op sin KAFKA_BROKERS; best-effort siempre —
+  // `convix.<event>`). No-op sin KAFKA_BROKERS; best-effort siempre —
   // e independiente de que la cuenta tenga endpoints HTTP suscritos.
   void publishEcosystemEvent(event, accountId, data);
 
@@ -121,9 +121,9 @@ async function deliverOne(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-Wacrm-Event': event,
-        'X-Wacrm-Webhook-Id': row.id,
-        'X-Wacrm-Signature': buildSignatureHeader(payload, secret, tsSeconds),
+        'X-Convix-Event': event,
+        'X-Convix-Webhook-Id': row.id,
+        'X-Convix-Signature': buildSignatureHeader(payload, secret, tsSeconds),
       },
       body: payload,
       // Do NOT follow redirects — a public URL could 3xx-bounce to an

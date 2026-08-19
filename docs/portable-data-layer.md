@@ -1,6 +1,6 @@
 # Capa de datos portable (post-Supabase)
 
-wacrm nació como template sobre Supabase. En la edición H&M Business
+convix nació como template sobre Supabase. En la edición H&M Business
 se eliminó esa dependencia: la app corre contra **cualquier
 PostgreSQL** y **cualquier servidor Node**, sin cambiar el código de
 features. Este documento explica cómo.
@@ -30,7 +30,7 @@ mecánicos:
 Cada consulta iniciada por un usuario corre en una transacción con:
 
 ```sql
-SET LOCAL ROLE wacrm_user;                    -- rol sin login, sujeto a RLS
+SET LOCAL ROLE convix_user;                    -- rol sin login, sujeto a RLS
 SELECT set_config('app.user_id', $uid, true); -- quién actúa
 ```
 
@@ -82,12 +82,12 @@ siempre).
 ## Realtime
 
 Triggers `notify_change` (migración `0003`) emiten
-`pg_notify('wacrm_changes', {table, op, id, account_id, user_id})`
+`pg_notify('convix_changes', {table, op, id, account_id, user_id})`
 en `messages`, `conversations`, `notifications` y `member_presence`.
 Un broker por proceso (`src/lib/realtime/broker.ts`) escucha, rehidrata
 la fila y la reparte a los SSE de los suscriptores de la misma cuenta
 (y del mismo usuario para `notifications`). Los mensajes broadcast
-(typing) viajan por `pg_notify('wacrm_broadcast', …)` vía
+(typing) viajan por `pg_notify('convix_broadcast', …)` vía
 `POST /api/realtime/broadcast`, así funcionan con N instancias de la
 app detrás de un balanceador.
 
@@ -98,7 +98,7 @@ canales de supabase-js (`.channel().on('postgres_changes'|'broadcast')
 ## Identidad
 
 - `users` / `sessions` / `password_reset_tokens` / `oidc_identities`
-  (sin GRANT para `wacrm_user`: solo el servidor las toca).
+  (sin GRANT para `convix_user`: solo el servidor las toca).
 - Contraseñas: scrypt (N=2^15, r=8, p=1). Sesiones: token opaco de
   256 bits en cookie httpOnly; en la BD solo su SHA-256; expiración
   deslizante de 30 días.
@@ -117,9 +117,9 @@ canales de supabase-js (`.channel().on('postgres_changes'|'broadcast')
 `src/lib/events/kafka.ts` publica cada evento de dominio en el bus
 compartido con la convención del ecosistema (`<producto>.<evento>`):
 
-- `wacrm.message.received`
-- `wacrm.message.status_updated`
-- `wacrm.conversation.created`
+- `convix.message.received`
+- `convix.message.status_updated`
+- `convix.conversation.created`
 
 El hook vive en `dispatchWebhookEvent`
 (`src/lib/webhooks/deliver.ts`): todo evento que la app despacha a
