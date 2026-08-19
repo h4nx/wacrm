@@ -210,7 +210,10 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
                 pathname === item.href ||
                 (item.href !== "/dashboard" && pathname.startsWith(item.href));
 
-              const showUnreadDot =
+              // Same suppress-while-active rule as before: no badge while
+              // the user is already looking at the Inbox — the per-
+              // conversation unread state is visible right there.
+              const showUnreadBadge =
                 item.href === "/inbox" && totalUnread > 0 && !isActive;
 
               // Unlike the inbox dot, the notifications count stays visible
@@ -242,13 +245,12 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
                         Beta
                       </span>
                     )}
-                    {showUnreadDot && (
+                    {showUnreadBadge && (
                       <span
                         aria-label={`${totalUnread} unread conversation${totalUnread === 1 ? "" : "s"}`}
-                        className="relative flex h-2 w-2"
+                        className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground"
                       >
-                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
-                        <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+                        {totalUnread > 9 ? "9+" : totalUnread}
                       </span>
                     )}
                     {showNotificationBadge && (
