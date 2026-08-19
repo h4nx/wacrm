@@ -29,7 +29,7 @@ import {
   rateLimitResponse,
   RATE_LIMITS,
 } from "@/lib/rate-limit";
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
 
 /**
  * Best-effort client IP. The `x-forwarded-for` header is what
@@ -68,7 +68,12 @@ export async function GET(
     );
   }
 
-  const supabase = await createClient();
+  // Service client, not the session-based one: a real visitor hitting
+  // this route hasn't signed up yet, so there's no session to attach —
+  // createClient() would short-circuit with Unauthorized before the
+  // (SECURITY DEFINER, fixed-shape) RPC ever ran. This is the same
+  // "public/auth-path" case createServiceClient() exists for.
+  const supabase = createServiceClient();
   const { data, error } = await supabase.rpc("peek_invitation", {
     p_token_hash: hashInviteToken(token),
   });

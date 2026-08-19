@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   INTERACTIVE_LIMITS,
+  deleteMessageTemplate,
   sendInteractiveButtons,
   sendInteractiveList,
 } from "./meta-api";
@@ -265,5 +266,87 @@ describe("sendInteractiveList — validation", () => {
         },
       },
     });
+  });
+});
+
+describe("deleteMessageTemplate", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  const ARGS = {
+    wabaId: "waba-1",
+    accessToken: "test-token",
+    name: "demo",
+    metaTemplateId: "12345",
+  };
+
+  it("resolves on a clean 200", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(JSON.stringify({ success: true }), { status: 200 })),
+    );
+    await expect(deleteMessageTemplate(ARGS)).resolves.toBeUndefined();
+  });
+
+  it("treats a plain 404 as already-gone (no-op)", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(null, { status: 404 })));
+    await expect(deleteMessageTemplate(ARGS)).resolves.toBeUndefined();
+  });
+
+  it("treats Meta's 'Message Template Not Found' (code 100 / subcode 2593002) as a no-op", async () => {
+    // The exact shape confirmed live against the Graph API for a stale hsm_id.
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response(
+            JSON.stringify({
+              error: {
+                message: "Invalid parameter",
+                type: "OAuthException",
+                code: 100,
+                error_subcode: 2593002,
+                error_user_title: "Message Template Not Found",
+                error_user_msg: "The message template demo wasn't found for this account.",
+              },
+            }),
+            { status: 400 },
+          ),
+      ),
+    );
+    await expect(deleteMessageTemplate(ARGS)).resolves.toBeUndefined();
+  });
+
+  it("treats the generic 'object does not exist' (code 100 / subcode 33) as a no-op", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response(
+            JSON.stringify({ error: { message: "does not exist", code: 100, error_subcode: 33 } }),
+            { status: 400 },
+          ),
+      ),
+    );
+    await expect(deleteMessageTemplate(ARGS)).resolves.toBeUndefined();
+  });
+
+  it("still throws on an unrelated Meta error (e.g. invalid/expired token)", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response(
+            JSON.stringify({
+              error: { message: "Error validating access token", code: 190, error_subcode: 463 },
+            }),
+            { status: 401 },
+          ),
+      ),
+    );
+    await expect(deleteMessageTemplate(ARGS)).rejects.toThrow(
+      /Error validating access token/,
+    );
   });
 });
