@@ -13,8 +13,15 @@ import type { TemplateButton, TemplateSampleValues } from '@/types'
  * states (PAUSED) from terminal ones (DISABLED) and so webhook events
  * land 1:1 without a translation table.
  *
- * Locally-created templates (no Meta counterpart) are NOT deleted —
- * they remain visible so the user can notice drift and clean up.
+ * Rows that were previously submitted to Meta (meta_template_id set)
+ * but no longer appear in Meta's listing are deleted locally — Meta
+ * is the source of truth for anything it once accepted. This only
+ * runs when the listing wasn't `truncated` (see below): a partial
+ * page is not proof a template is gone, so we'd rather leave stale
+ * rows for the next full sync than mass-delete on incomplete data.
+ * Purely local DRAFT rows (never submitted, no meta_template_id) are
+ * never touched here — sync has no way to know about those either
+ * way.
  */
 
 const META_API_VERSION = 'v21.0'
@@ -301,13 +308,40 @@ export async function POST() {
       }
     }
 
+    const truncated = pageCount >= PAGE_CAP && nextUrl !== null
+
+    // Clean up local rows Meta no longer has — only safe to do when
+    // we fetched every page (see comment at the top of this file).
+    let deleted = 0
+    if (!truncated) {
+      const seenMetaIds = new Set(metaTemplates.map((t) => t.id))
+      const { data: localRows, error: localErr } = await supabase
+        .from('message_templates')
+        .select('id, meta_template_id')
+        .eq('account_id', accountId)
+
+      if (!localErr && localRows) {
+        const staleIds = localRows
+          .filter((r) => r.meta_template_id && !seenMetaIds.has(r.meta_template_id as string))
+          .map((r) => r.id as string)
+        if (staleIds.length) {
+          const { error: delErr, count } = await supabase
+            .from('message_templates')
+            .delete({ count: 'exact' })
+            .in('id', staleIds)
+          if (!delErr) deleted = count ?? staleIds.length
+        }
+      }
+    }
+
     return NextResponse.json({
       success: errors.length === 0,
       total: metaTemplates.length,
       inserted,
       updated,
+      deleted,
       errors,
-      truncated: pageCount >= PAGE_CAP && nextUrl !== null,
+      truncated,
     })
   } catch (error) {
     console.error('Error syncing WhatsApp templates:', error)

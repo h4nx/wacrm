@@ -24,7 +24,13 @@ export interface MetaPhoneInfo {
 }
 
 interface MetaErrorResponse {
-  error?: { message?: string; code?: number; type?: string }
+  error?: {
+    message?: string
+    code?: number
+    type?: string
+    error_subcode?: number
+    error_user_title?: string
+  }
 }
 
 async function throwMetaError(response: Response, fallback: string): Promise<never> {
@@ -651,11 +657,26 @@ export async function deleteMessageTemplate(
     method: 'DELETE',
     headers: { Authorization: `Bearer ${accessToken}` },
   })
-  // Treat a 404 as a no-op — the template is already gone on Meta's
-  // side, and we still want the local row removed.
+  // Treat "already gone on Meta's side" as a no-op so the local row
+  // still gets cleaned up. That's a clean 404 in most cases, but for a
+  // stale/orphaned hsm_id this endpoint reports it as a 400 OAuthException
+  // instead — code 100 with subcode 2593002 ("Message Template Not
+  // Found") confirmed against the live API; subcode 33 (the generic
+  // "object does not exist" seen on other Graph endpoints) included
+  // defensively in case Meta ever reuses it here.
+  const NOT_FOUND_SUBCODES = new Set([33, 2593002])
   if (response.status === 404) return
   if (!response.ok) {
-    await throwMetaError(response, `Meta API error: ${response.status}`)
+    const data = (await response.json().catch(() => null)) as MetaErrorResponse | null
+    const err = data?.error
+    if (
+      err?.code === 100 &&
+      (NOT_FOUND_SUBCODES.has(err.error_subcode ?? -1) ||
+        err.error_user_title === 'Message Template Not Found')
+    ) {
+      return
+    }
+    throw new Error(err?.message ?? `Meta API error: ${response.status}`)
   }
 }
 

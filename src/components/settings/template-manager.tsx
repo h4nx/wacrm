@@ -308,11 +308,14 @@ export function TemplateManager() {
       if (!res.ok) {
         throw new Error(data?.error || `Sync failed (HTTP ${res.status})`);
       }
+      const changeParts = [
+        data.inserted ? `${data.inserted} new` : null,
+        data.updated ? `${data.updated} updated` : null,
+        data.deleted ? `${data.deleted} removed (gone from Meta)` : null,
+      ].filter(Boolean);
       toast.success(
         `Synced ${data.total} template${data.total === 1 ? '' : 's'} from Meta` +
-          (data.inserted || data.updated
-            ? ` (${data.inserted} new, ${data.updated} updated)`
-            : ''),
+          (changeParts.length ? ` (${changeParts.join(', ')})` : ''),
       );
       if (Array.isArray(data.errors) && data.errors.length > 0) {
         const preview = data.errors.slice(0, 3).map(
@@ -1099,8 +1102,8 @@ export function TemplateManager() {
             <DialogTitle className="text-popover-foreground">Delete template?</DialogTitle>
             <DialogDescription className="text-muted-foreground">
               {templateToDelete?.meta_template_id
-                ? `"${templateToDelete?.name}" will be deleted from Meta and from wacrm. Active broadcasts using this template will start failing on their next send. This can't be undone.`
-                : `"${templateToDelete?.name}" will be deleted from wacrm. It was never submitted to Meta, so no remote cleanup is needed.`}
+                ? `"${templateToDelete?.name}" will be deleted from Meta and from Convix. Active broadcasts using this template will start failing on their next send. This can't be undone.`
+                : `"${templateToDelete?.name}" will be deleted from Convix. It was never submitted to Meta, so no remote cleanup is needed.`}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="bg-popover border-border">
