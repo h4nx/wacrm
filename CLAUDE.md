@@ -55,7 +55,7 @@ so tests never hit real Meta or need real secrets.
 docker compose up -d db          # Postgres 16 + pgvector on :5432 only
 docker compose --profile full up -d   # app + Postgres + MinIO + Mailpit
 
-# Full local stack under its own compose project (app on :1000):
+# Full local stack under its own compose project (app on :11000):
 docker compose -p convix-dev -f docker-compose.local.yml --env-file .env.convix-dev up -d --build
 ```
 

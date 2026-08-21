@@ -5,9 +5,9 @@
 #     --env-file .env.convix-dev up -d --build
 #
 # Puertos en el host (el resto de servicios son solo internos):
-#   1000 → app        http://localhost:1000
-#   1001 → Mailpit UI http://localhost:1001  (emails de reseteo)
-#   1002 → MinIO UI   http://localhost:1002  (minioadmin/minioadmin)
+#   11000 → app        http://localhost:11000
+#   11001 → Mailpit UI http://localhost:11001  (emails de reseteo)
+#   11002 → MinIO UI   http://localhost:11002  (minioadmin/minioadmin)
 #
 # Secretos en .env.convix-dev (gitignored). Este archivo es para el
 # stack local; el despliegue de producción usa docker-compose.yml.
@@ -51,7 +51,7 @@ services:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
     ports:
-      - '1002:9001'
+      - '11002:9001'
     volumes:
       - convix-dev-minio:/data
     healthcheck:
@@ -75,7 +75,7 @@ services:
   mailpit:
     image: axllent/mailpit:latest
     ports:
-      - '1001:8025'
+      - '11001:8025'
 
   app:
     build: .
@@ -88,7 +88,7 @@ services:
       DATABASE_URL: postgres://postgres:postgres@db:5432/convix
       ENCRYPTION_KEY: ${ENCRYPTION_KEY:?definir en .env.convix-dev}
       META_APP_SECRET: ${META_APP_SECRET:?definir en .env.convix-dev}
-      NEXT_PUBLIC_SITE_URL: http://localhost:1000
+      NEXT_PUBLIC_SITE_URL: http://localhost:11000
       STORAGE_DRIVER: s3
       S3_ENDPOINT: http://minio:9000
       S3_REGION: us-east-1
@@ -103,7 +103,7 @@ services:
       KAFKA_CLIENT_ID: convix
       KAFKA_TOPIC_PREFIX: convix
     ports:
-      - '1000:3000'
+      - '11000:3000'
 
 volumes:
   convix-dev-db:
