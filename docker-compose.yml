@@ -40,12 +40,11 @@ services:
     volumes:
       - convix-minio:/data
 
-  # SMTP de desarrollo — captura los emails de reseteo de contraseña.
-  mailpit:
-    image: axllent/mailpit:latest
-    ports:
-      - '1025:1025'
-      - '8025:8025'
+  # Mailpit compartido por todo el ecosistema H&M Business — vive en
+  # ~/Developer/hmbusiness/Mailpit (docker compose up -d ahí, una sola vez).
+  # UI en http://localhost:18000. Conectar este proyecto a esa red una vez:
+  #   docker network connect <red-de-este-proyecto> mailpit --alias mailpit
+  # SMTP_HOST/SMTP_PORT abajo ya apuntan a mailpit:1025 por default.
 
   app:
     profiles: ['full']

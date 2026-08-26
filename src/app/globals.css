@@ -48,6 +48,18 @@
   --color-primary-hover: var(--primary-hover);
   --color-primary-soft: var(--primary-soft);
   --color-primary-soft-2: var(--primary-soft-2);
+  /* Auth split-screen surfaces (login/signup/forgot/reset-password) —
+   * see the AUTH block below for why these are fixed rather than
+   * MODE-dependent. */
+  --color-auth-panel: var(--auth-panel-bg);
+  --color-auth-panel-foreground: var(--auth-panel-foreground);
+  --color-auth-panel-muted: var(--auth-panel-muted);
+  --color-auth-panel-border: var(--auth-panel-border);
+  --color-auth-form: var(--auth-form-bg);
+  --color-auth-form-foreground: var(--auth-form-foreground);
+  --color-auth-form-muted: var(--auth-form-muted);
+  --color-auth-form-border: var(--auth-form-border);
+  --color-auth-form-input: var(--auth-form-input);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -143,6 +155,30 @@ html[data-mode="light"] {
   --sidebar-accent: oklch(0.96 0.004 260);
   --sidebar-accent-foreground: oklch(0.25 0.01 260);
   --sidebar-border: oklch(0.922 0.004 260);
+}
+
+/* ---- AUTH: fixed split-screen surfaces ----
+ *
+ * login/signup/forgot-password/reset-password share a persistent dark
+ * brand panel + light form panel (the H&M Business ecosystem's auth
+ * convention — see Orbix/Vaultex). Unlike the neutral MODE tokens
+ * above, these are NOT re-defined per data-mode: the brand panel stays
+ * dark and the form panel stays light regardless of the signed-in
+ * dashboard's light/dark preference, since nobody has a mode
+ * preference yet on the page that lets them sign in. Values mirror
+ * the dark/light MODE tokens' own numbers 1:1, so this reads as "this
+ * app's dark" / "this app's light" rather than a foreign palette. */
+:root {
+  --auth-panel-bg: oklch(0.13 0.01 260);
+  --auth-panel-foreground: oklch(0.985 0 0);
+  --auth-panel-muted: oklch(0.65 0.01 260);
+  --auth-panel-border: oklch(0.28 0.01 260);
+
+  --auth-form-bg: oklch(0.99 0.002 260);
+  --auth-form-foreground: oklch(0.21 0.01 260);
+  --auth-form-muted: oklch(0.52 0.015 260);
+  --auth-form-border: oklch(0.922 0.004 260);
+  --auth-form-input: oklch(0.967 0.003 260);
 }
 
 /* ---- ACCENT: primary color ---- */

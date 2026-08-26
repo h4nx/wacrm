@@ -8,14 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { MessageSquare, UsersRound } from "lucide-react";
+import { AuthLayout } from "@/components/auth/auth-layout";
 
 // `useSearchParams` opts the component out of static prerendering
 // unless it sits under a Suspense boundary. We split the form into
@@ -84,115 +77,106 @@ function LoginPageInner() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <Card className="w-full max-w-md border-border bg-card">
-        <CardHeader className="items-center text-center">
-          <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-            {inviteToken ? (
-              <UsersRound className="h-6 w-6 text-primary" />
-            ) : (
-              <MessageSquare className="h-6 w-6 text-primary" />
-            )}
+    <AuthLayout>
+      <div className="mb-8">
+        <p className="mb-2 font-mono text-xs tracking-[0.14em] text-primary uppercase">
+          Convix &middot; Sign in
+        </p>
+        <h2 className="text-2xl font-semibold tracking-tight text-auth-form-foreground">
+          {inviteToken ? t('titleAccept') : t('titleWelcome')}
+        </h2>
+        <p className="mt-1.5 text-sm text-auth-form-muted">
+          {inviteToken ? t('descAccept') : t('descWelcome')}
+        </p>
+      </div>
+
+      <form onSubmit={handleLogin} className="flex flex-col gap-4">
+        {error && (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+            {error}
           </div>
-          <CardTitle className="text-xl text-foreground">
-            {inviteToken ? t('titleAccept') : t('titleWelcome')}
-          </CardTitle>
-          <CardDescription className="text-muted-foreground">
-            {inviteToken
-              ? t('descAccept')
-              : t('descWelcome')}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleLogin} className="flex flex-col gap-4">
-            {error && (
-              <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-                {error}
-              </div>
-            )}
+        )}
 
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="email" className="text-muted-foreground">
-                {t('emailLabel')}
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder={t('emailPlaceholder')}
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="border-border bg-muted text-foreground placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/20"
-              />
-            </div>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="email" className="text-auth-form-muted">
+            {t('emailLabel')}
+          </Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder={t('emailPlaceholder')}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="h-11 rounded-xl border-auth-form-border bg-auth-form-input text-auth-form-foreground placeholder:text-auth-form-muted focus-visible:border-primary focus-visible:ring-primary/20"
+          />
+        </div>
 
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-muted-foreground">
-                  {t('passwordLabel')}
-                </Label>
-                <Link
-                  href="/forgot-password"
-                  className="text-sm text-primary hover:text-primary/80"
-                >
-                  {t('forgotPassword')}
-                </Link>
-              </div>
-              <Input
-                id="password"
-                type="password"
-                placeholder={t('passwordPlaceholder')}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="border-border bg-muted text-foreground placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/20"
-              />
-            </div>
-
-            <Button
-              type="submit"
-              disabled={loading}
-              className="mt-2 h-10 w-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-            >
-              {loading ? t('signingIn') : t('signIn')}
-            </Button>
-          </form>
-
-          {ssoProvider && (
-            <div className="mt-4 flex flex-col gap-4">
-              <div className="flex items-center gap-3">
-                <div className="h-px flex-1 bg-border" />
-                <span className="text-xs text-muted-foreground">{t("ssoOr")}</span>
-                <div className="h-px flex-1 bg-border" />
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                className="h-10 w-full"
-                onClick={() => {
-                  window.location.href = "/api/auth/oidc/login";
-                }}
-              >
-                {t("ssoContinue", { provider: ssoProvider })}
-              </Button>
-            </div>
-          )}
-
-          <p className="mt-6 text-center text-sm text-muted-foreground">
-            {t('noAccount')}{" "}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password" className="text-auth-form-muted">
+              {t('passwordLabel')}
+            </Label>
             <Link
-              href={
-                inviteToken
-                  ? `/signup?invite=${encodeURIComponent(inviteToken)}`
-                  : "/signup"
-              }
-              className="text-primary hover:text-primary/80"
+              href="/forgot-password"
+              className="text-sm text-primary hover:text-primary/80"
             >
-              {t('createAccount')}
+              {t('forgotPassword')}
             </Link>
-          </p>
-        </CardContent>
-      </Card>
-    </div>
+          </div>
+          <Input
+            id="password"
+            type="password"
+            placeholder={t('passwordPlaceholder')}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="h-11 rounded-xl border-auth-form-border bg-auth-form-input text-auth-form-foreground placeholder:text-auth-form-muted focus-visible:border-primary focus-visible:ring-primary/20"
+          />
+        </div>
+
+        <Button
+          type="submit"
+          disabled={loading}
+          className="mt-2 h-11 w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+        >
+          {loading ? t('signingIn') : t('signIn')}
+        </Button>
+      </form>
+
+      {ssoProvider && (
+        <div className="mt-4 flex flex-col gap-4">
+          <div className="flex items-center gap-3">
+            <div className="h-px flex-1 bg-auth-form-border" />
+            <span className="text-xs text-auth-form-muted">{t("ssoOr")}</span>
+            <div className="h-px flex-1 bg-auth-form-border" />
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            className="h-11 w-full rounded-xl border-auth-form-border text-auth-form-foreground hover:bg-auth-form-input"
+            onClick={() => {
+              window.location.href = "/api/auth/oidc/login";
+            }}
+          >
+            {t("ssoContinue", { provider: ssoProvider })}
+          </Button>
+        </div>
+      )}
+
+      <p className="mt-6 text-center text-sm text-auth-form-muted">
+        {t('noAccount')}{" "}
+        <Link
+          href={
+            inviteToken
+              ? `/signup?invite=${encodeURIComponent(inviteToken)}`
+              : "/signup"
+          }
+          className="text-primary hover:text-primary/80"
+        >
+          {t('createAccount')}
+        </Link>
+      </p>
+    </AuthLayout>
   );
 }

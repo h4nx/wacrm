@@ -6,14 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { KeyRound } from "lucide-react";
+import { AuthLayout } from "@/components/auth/auth-layout";
 
 // `useSearchParams` fuerza Suspense — mismo patrón que /login.
 export default function ResetPasswordPage() {
@@ -67,89 +60,88 @@ function ResetPasswordInner() {
 
   if (!token) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background px-4">
-        <Card className="w-full max-w-md border-border bg-card">
-          <CardHeader className="items-center text-center">
-            <CardTitle className="text-xl text-foreground">
-              Invalid reset link
-            </CardTitle>
-            <CardDescription className="text-muted-foreground">
-              This link is missing its token. Request a new one from the
-              forgot-password page.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link href="/forgot-password">
-              <Button variant="outline" className="w-full">
-                Request a new link
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
+      <AuthLayout>
+        <div className="mb-8">
+          <p className="mb-2 font-mono text-xs tracking-[0.14em] text-primary uppercase">
+            Convix &middot; Reset password
+          </p>
+          <h2 className="text-2xl font-semibold tracking-tight text-auth-form-foreground">
+            Invalid reset link
+          </h2>
+          <p className="mt-1.5 text-sm text-auth-form-muted">
+            This link is missing its token. Request a new one from the
+            forgot-password page.
+          </p>
+        </div>
+        <Link href="/forgot-password">
+          <Button
+            variant="outline"
+            className="h-11 w-full rounded-xl border-auth-form-border text-auth-form-foreground hover:bg-auth-form-input"
+          >
+            Request a new link
+          </Button>
+        </Link>
+      </AuthLayout>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <Card className="w-full max-w-md border-border bg-card">
-        <CardHeader className="items-center text-center">
-          <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-            <KeyRound className="h-6 w-6 text-primary" />
+    <AuthLayout>
+      <div className="mb-8">
+        <p className="mb-2 font-mono text-xs tracking-[0.14em] text-primary uppercase">
+          Convix &middot; Reset password
+        </p>
+        <h2 className="text-2xl font-semibold tracking-tight text-auth-form-foreground">
+          Choose a new password
+        </h2>
+        <p className="mt-1.5 text-sm text-auth-form-muted">
+          The link is valid for one hour and can be used once.
+        </p>
+      </div>
+
+      <form onSubmit={handleReset} className="flex flex-col gap-4">
+        {error && (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+            {error}
           </div>
-          <CardTitle className="text-xl text-foreground">
-            Choose a new password
-          </CardTitle>
-          <CardDescription className="text-muted-foreground">
-            The link is valid for one hour and can be used once.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleReset} className="flex flex-col gap-4">
-            {error && (
-              <div className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-                {error}
-              </div>
-            )}
+        )}
 
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="password" className="text-muted-foreground">
-                New password
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="border-border bg-muted text-foreground"
-              />
-            </div>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="password" className="text-auth-form-muted">
+            New password
+          </Label>
+          <Input
+            id="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="h-11 rounded-xl border-auth-form-border bg-auth-form-input text-auth-form-foreground placeholder:text-auth-form-muted focus-visible:border-primary focus-visible:ring-primary/20"
+          />
+        </div>
 
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="confirmPassword" className="text-muted-foreground">
-                Confirm password
-              </Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                className="border-border bg-muted text-foreground"
-              />
-            </div>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="confirmPassword" className="text-auth-form-muted">
+            Confirm password
+          </Label>
+          <Input
+            id="confirmPassword"
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            className="h-11 rounded-xl border-auth-form-border bg-auth-form-input text-auth-form-foreground placeholder:text-auth-form-muted focus-visible:border-primary focus-visible:ring-primary/20"
+          />
+        </div>
 
-            <Button
-              type="submit"
-              disabled={loading}
-              className="mt-2 h-10 w-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-            >
-              {loading ? "Saving…" : "Set new password"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+        <Button
+          type="submit"
+          disabled={loading}
+          className="mt-2 h-11 w-full rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+        >
+          {loading ? "Saving…" : "Set new password"}
+        </Button>
+      </form>
+    </AuthLayout>
   );
 }

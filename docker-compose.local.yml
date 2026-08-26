@@ -72,10 +72,11 @@ services:
       mc mb --ignore-existing local/convix
       "
 
-  mailpit:
-    image: axllent/mailpit:latest
-    ports:
-      - '11001:8025'
+  # Mailpit compartido por todo el ecosistema H&M Business — vive en
+  # ~/Developer/hmbusiness/Mailpit (docker compose up -d ahí, una sola vez).
+  # UI en http://localhost:18000. Conectarlo a esta red una sola vez:
+  #   docker network connect convix-dev_default mailpit --alias mailpit
+  # SMTP_HOST=mailpit abajo ya no necesita cambios.
 
   app:
     build: .
