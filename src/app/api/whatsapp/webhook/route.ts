@@ -604,6 +604,28 @@ async function processMessage(
     return
   }
 
+  // Idempotency guard against Meta's at-least-once webhook redelivery
+  // (network blips, transient errors — the fast-ack-then-process design
+  // above already avoids the *common* trigger, a slow ack, but doesn't
+  // eliminate retries entirely). Without this, a retried delivery of a
+  // message whose flow/automation run already fully completed (a fast,
+  // non-suspending run — see dispatchInboundToFlows) has no active run to
+  // catch the duplicate against, so it would insert a second `messages`
+  // row AND re-run the entry trigger, re-sending every message the flow
+  // sends. Scoped to this conversation (not globally — message_id is not
+  // unique across phone numbers, see the comment on handleStatusUpdate).
+  const { data: existingInbound } = await supabaseAdmin()
+    .from('messages')
+    .select('id')
+    .eq('conversation_id', conversation.id)
+    .eq('message_id', message.id)
+    .limit(1)
+    .maybeSingle()
+  if (existingInbound) {
+    console.log('[webhook] duplicate inbound delivery, skipping:', message.id)
+    return
+  }
+
   // Parse message content based on type
   const { contentText, mediaUrl, mediaType, interactiveReplyId } =
     await parseMessageContent(message, accessToken)

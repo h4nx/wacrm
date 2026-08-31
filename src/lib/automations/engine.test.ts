@@ -95,7 +95,7 @@ vi.mock("./meta-send", () => ({
   engineSendTemplate: vi.fn(async () => ({ whatsapp_message_id: "m1" })),
 }));
 
-import { runAutomationsForTrigger } from "./engine";
+import { runAutomationsForTrigger, isWithinTimeWindow } from "./engine";
 
 const ACCOUNT = "acct-1";
 
@@ -256,3 +256,41 @@ function customStep(field: string, value: string) {
     step_config: { field, value },
   };
 }
+
+describe("isWithinTimeWindow (time_of_day condition)", () => {
+  it("matches inside a same-day window", () => {
+    // 09:00-18:00, checking 12:00 (720 min)
+    expect(isWithinTimeWindow("09:00-18:00", 12 * 60)).toBe(true);
+  });
+
+  it("does not match before the window starts", () => {
+    expect(isWithinTimeWindow("09:00-18:00", 8 * 60)).toBe(false);
+  });
+
+  it("does not match at/after the window ends (end exclusive)", () => {
+    expect(isWithinTimeWindow("09:00-18:00", 18 * 60)).toBe(false);
+  });
+
+  it("supports an over-midnight window", () => {
+    // 22:00-06:00 — 23:30 and 02:00 are both inside; 12:00 is outside.
+    expect(isWithinTimeWindow("22:00-06:00", 23 * 60 + 30)).toBe(true);
+    expect(isWithinTimeWindow("22:00-06:00", 2 * 60)).toBe(true);
+    expect(isWithinTimeWindow("22:00-06:00", 12 * 60)).toBe(false);
+  });
+
+  it("returns false for a malformed operand", () => {
+    expect(isWithinTimeWindow("", 12 * 60)).toBe(false);
+    expect(isWithinTimeWindow("09:00", 12 * 60)).toBe(false);
+  });
+
+  it("evaluates in UTC regardless of the host process timezone — the bug this replaces", () => {
+    // Before the fix, this read Date#getHours()/getMinutes() (process-local
+    // time). On a machine running with TZ=America/Lima (UTC-5), 14:00 UTC is
+    // 09:00 local — so the old code would evaluate an operand meant to mean
+    // "9am UTC" against the wrong wall-clock instant depending on where the
+    // process happened to be running. The fix takes UTC minutes explicitly,
+    // so the same instant always yields the same answer regardless of host TZ.
+    const nineAmUtcInMinutes = 9 * 60;
+    expect(isWithinTimeWindow("09:00-18:00", nineAmUtcInMinutes)).toBe(true);
+  });
+});

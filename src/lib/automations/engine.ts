@@ -623,24 +623,46 @@ async function evaluateCondition(cfg: ConditionStepConfig, args: ExecuteArgs): P
       const text = (args.context.message_text ?? '').toString()
       return text.toLowerCase().includes((cfg.value ?? '').toLowerCase())
     }
-    case 'time_of_day': {
-      // operand form "HH:mm-HH:mm" — true if now is within that window
-      // (supports over-midnight ranges like "18:00-09:00").
-      const [from, to] = (cfg.operand ?? '').split('-')
-      if (!from || !to) return false
-      const now = new Date()
-      const mins = now.getHours() * 60 + now.getMinutes()
-      const parse = (s: string) => {
-        const [h, m] = s.split(':').map(Number)
-        return (h || 0) * 60 + (m || 0)
-      }
-      const f = parse(from)
-      const t = parse(to)
-      return f <= t ? mins >= f && mins < t : mins >= f || mins < t
-    }
+    case 'time_of_day':
+      return isWithinTimeWindow(cfg.operand ?? '', utcMinutesNow())
     default:
       return false
   }
+}
+
+function utcMinutesNow(): number {
+  const now = new Date()
+  return now.getUTCHours() * 60 + now.getUTCMinutes()
+}
+
+/**
+ * `operand` form "HH:mm-HH:mm" — true if `nowUtcMinutes` falls inside that
+ * window (supports over-midnight ranges like "18:00-09:00"). Exported pure
+ * for unit testing, same reasoning as flows/engine.ts's
+ * evaluateConditionPredicate: no Supabase mock needed to verify the window
+ * math itself.
+ *
+ * Evaluated in UTC, deliberately — there is no per-account timezone setting
+ * anywhere in the schema yet (ConditionStepConfig has no timezone field,
+ * unlike TimeBasedTriggerConfig which does), so a "local" interpretation
+ * would silently mean "whatever timezone the Node process happens to run
+ * in" — different between a developer's laptop and Vercel's UTC runtime,
+ * and wrong for every non-UTC account either way. Deterministic-but-UTC
+ * beats silently-different-per-environment; per-account timezone awareness
+ * would need a real schema field + builder UI, not shipped here.
+ */
+export function isWithinTimeWindow(operand: string, nowUtcMinutes: number): boolean {
+  const [from, to] = operand.split('-')
+  if (!from || !to) return false
+  const parse = (s: string) => {
+    const [h, m] = s.split(':').map(Number)
+    return (h || 0) * 60 + (m || 0)
+  }
+  const f = parse(from)
+  const t = parse(to)
+  return f <= t
+    ? nowUtcMinutes >= f && nowUtcMinutes < t
+    : nowUtcMinutes >= f || nowUtcMinutes < t
 }
 
 function waitMs(cfg: WaitStepConfig): number {

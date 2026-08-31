@@ -7,7 +7,14 @@
 #
 # La app también corre fuera de Docker (npm run dev / next start):
 # solo necesita DATABASE_URL.
+#
+# Mismo nombre de proyecto "convix-dev" que docker-compose.local.yml (que ya
+# lo fija vía -p convix-dev en CLAUDE.md) — los servicios base (db/minio/app)
+# se llaman igual en ambos archivos a propósito, así que comparten el mismo
+# stack en vez de crear un Postgres/MinIO duplicado por separado.
 # ============================================================
+
+name: convix-dev
 
 services:
   db:
