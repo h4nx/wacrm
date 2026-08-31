@@ -29,17 +29,45 @@ export async function getOidcConfig(): Promise<oidc.Configuration> {
   if (!oidcEnabled()) throw new Error('OIDC no está configurado');
   if (!cachedConfig) {
     const issuer = new URL(process.env.OIDC_ISSUER_URL!);
-    // openid-client exige HTTPS; un issuer http:// solo tiene sentido
-    // en desarrollo (Keycloak local), así que ahí lo permitimos.
+    // openid-client exige HTTPS; un issuer http:// solo tiene sentido en
+    // desarrollo (Keycloak local sin TLS). No se puede usar NODE_ENV acá:
+    // `next build` reemplaza `process.env.NODE_ENV` por la constante
+    // "production" en tiempo de compilación (vía define plugin), así que
+    // un override en runtime (docker-compose) nunca llegaría a este check
+    // en un build standalone. OIDC_ALLOW_INSECURE_HTTP sí se lee en
+    // runtime porque no es una var especial para el bundler.
     const insecureDev =
-      issuer.protocol === 'http:' && process.env.NODE_ENV !== 'production';
-    cachedConfig = await oidc.discovery(
-      issuer,
-      process.env.OIDC_CLIENT_ID!,
-      process.env.OIDC_CLIENT_SECRET,
-      undefined,
-      insecureDev ? { execute: [oidc.allowInsecureRequests] } : undefined
+      issuer.protocol === 'http:' &&
+      process.env.OIDC_ALLOW_INSECURE_HTTP === 'true';
+
+    // No usamos oidc.discovery(issuer, ...): ese helper exige (RFC 8414)
+    // que el `issuer` del JSON devuelto coincida exactamente con la URL
+    // pedida. En este ecosistema Keycloak sirve el well-known con
+    // `issuer`/authorization_endpoint apuntando al host "de navegador"
+    // (localhost) mientras que este server-side fetch solo puede
+    // alcanzarlo por host.docker.internal — endpoints legítimos y
+    // correctos, pero el chequeo estricto de discovery los rechaza.
+    // Pedimos el well-known nosotros mismos (misma URL, mismo JSON) y
+    // construimos la Configuration directo con esos metadatos, que no
+    // hace esa validación.
+    const wellKnownUrl = new URL(
+      '.well-known/openid-configuration',
+      issuer.href.endsWith('/') ? issuer.href : `${issuer.href}/`
     );
+    const res = await fetch(wellKnownUrl);
+    if (!res.ok) {
+      throw new Error(
+        `No se pudo obtener la configuración OIDC de ${wellKnownUrl}: ${res.status}`
+      );
+    }
+    const serverMetadata = await res.json();
+
+    cachedConfig = new oidc.Configuration(
+      serverMetadata,
+      process.env.OIDC_CLIENT_ID!,
+      process.env.OIDC_CLIENT_SECRET
+    );
+    if (insecureDev) oidc.allowInsecureRequests(cachedConfig);
   }
   return cachedConfig;
 }

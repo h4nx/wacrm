@@ -79,17 +79,33 @@ services:
   # SMTP_HOST=mailpit abajo ya no necesita cambios.
 
   app:
-    build: .
+    build:
+      context: .
+      args:
+        # /login se prerenderiza como HTML estático en build time — ver el
+        # comentario en el Dockerfile. Sin esto, el build-arg default "en"
+        # deja el login en inglés sin importar la env var de runtime abajo.
+        NEXT_PUBLIC_APP_LOCALE: es
     depends_on:
       db:
         condition: service_healthy
       minio:
         condition: service_healthy
     environment:
+      # Permite que getOidcConfig() acepte un issuer OIDC http:// — el
+      # Keycloak de este ecosistema en dev no tiene TLS. NODE_ENV no sirve
+      # para esto: next build lo reemplaza por la constante "production" en
+      # tiempo de compilación, así que un override en runtime nunca lo vería.
+      # En un deploy real el issuer sería https:// y esta var no haría falta.
+      OIDC_ALLOW_INSECURE_HTTP: 'true'
       DATABASE_URL: postgres://postgres:postgres@db:5432/convix
       ENCRYPTION_KEY: ${ENCRYPTION_KEY:?definir en .env.convix-dev}
       META_APP_SECRET: ${META_APP_SECRET:?definir en .env.convix-dev}
       NEXT_PUBLIC_SITE_URL: http://localhost:11000
+      # src/i18n/request.ts también la lee en runtime para rutas que no
+      # quedan prerenderizadas como HTML estático — el build-arg de arriba
+      # cubre /login y compañía, esto cubre todo lo demás.
+      NEXT_PUBLIC_APP_LOCALE: es
       STORAGE_DRIVER: s3
       S3_ENDPOINT: http://minio:9000
       S3_REGION: us-east-1
@@ -103,6 +119,13 @@ services:
       KAFKA_BROKERS: kafka:9092
       KAFKA_CLIENT_ID: convix
       KAFKA_TOPIC_PREFIX: convix
+      # Vaultex SSO real (Authorization Code + PKCE) — cliente público
+      # "convix-web" registrado en el Keycloak de Vaultex (base 15002 en esta
+      # máquina). host.docker.internal porque el server (Next.js API route)
+      # llama a Keycloak server-to-server para el discovery/token exchange.
+      OIDC_ISSUER_URL: http://host.docker.internal:15002/realms/vaultex-master
+      OIDC_CLIENT_ID: convix-web
+      OIDC_PROVIDER_NAME: Vaultex
     ports:
       - '11000:3000'
 

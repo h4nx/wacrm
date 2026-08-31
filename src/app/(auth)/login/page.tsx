@@ -154,7 +154,7 @@ function LoginPageInner() {
           <Button
             type="button"
             variant="outline"
-            className="h-11 w-full rounded-xl border-auth-form-border text-auth-form-foreground hover:bg-auth-form-input"
+            className="h-11 w-full rounded-xl border-auth-form-border bg-auth-form text-auth-form-foreground hover:bg-auth-form-input hover:text-auth-form-foreground"
             onClick={() => {
               window.location.href = "/api/auth/oidc/login";
             }}

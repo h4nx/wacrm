@@ -1,0 +1,20 @@
+{
+  "LoginPage": {
+    "titleAccept": "Inicia sesión para aceptar",
+    "titleWelcome": "Bienvenido de nuevo",
+    "descAccept": "Inicia sesión y te llevamos a la invitación.",
+    "descWelcome": "Inicia sesión en tu cuenta",
+    "emailLabel": "Correo electrónico",
+    "emailPlaceholder": "tu@empresa.com",
+    "passwordLabel": "Contraseña",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "passwordPlaceholder": "Ingresa tu contraseña",
+    "signingIn": "Iniciando sesión...",
+    "signIn": "Iniciar sesión",
+    "noAccount": "¿No tienes una cuenta?",
+    "createAccount": "Crear cuenta",
+    "ssoOr": "o",
+    "ssoContinue": "Continuar con {provider}",
+    "ssoError": "El inicio de sesión único falló. Intenta de nuevo o usa tu contraseña."
+  }
+}

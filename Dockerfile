@@ -14,6 +14,13 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
+# NEXT_PUBLIC_APP_LOCALE decide qué mensajes carga src/i18n/request.ts.
+# /login (y otras páginas de auth) se prerenderizan como HTML estático en
+# este build — no alcanza con setearla solo en runtime (docker-compose
+# `environment:`), porque para entonces el HTML ya quedó congelado con lo
+# que haya en build time. default a "en" si no se pasa nada.
+ARG NEXT_PUBLIC_APP_LOCALE=en
+ENV NEXT_PUBLIC_APP_LOCALE=$NEXT_PUBLIC_APP_LOCALE
 RUN npm run build
 
 FROM node:22-alpine AS runner
