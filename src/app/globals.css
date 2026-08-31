@@ -70,23 +70,26 @@
 }
 
 /* ============================================================
- * THEMING — two orthogonal dimensions
+ * THEMING
  *
- *   1. MODE   (light / dark)  → neutral surfaces. Selected with
- *      `document.documentElement.dataset.mode`. Defaults to dark.
- *   2. ACCENT (violet / …)    → the primary color only. Selected
- *      with `document.documentElement.dataset.theme`.
+ * MODE (light / dark) used to be a second, user-toggleable
+ * dimension here. Convix now runs a single fixed light mode — same
+ * model as the rest of the H&M Business ecosystem (Vaultex, Sealix,
+ * Acervex, Partex, Xentry: light content canvas, dark sidebar, no
+ * toggle) — so neutral surface tokens (background / card / border /
+ * muted / sidebar surfaces / neutral charts / radius) just live on
+ * bare `:root` now, no `data-mode` branching.
  *
- * The two compose: any accent works in either mode. Neutral
- * tokens (background / card / border / muted / sidebar surfaces /
- * neutral charts / radius) live in the MODE blocks below; accent
- * tokens (--primary*, --ring, --chart-1, --sidebar-primary*,
- * --sidebar-ring) live in the ACCENT blocks. They set disjoint
- * variables, so cascade order between them doesn't matter.
+ * ACCENT (violet / …) is still user-selectable, via
+ * `document.documentElement.dataset.theme` — the primary color only
+ * (--primary*, --ring, --chart-1, --sidebar-primary*,
+ * --sidebar-ring). It sets a disjoint set of variables from the
+ * neutral tokens above, so cascade order between them doesn't
+ * matter.
  *
- * `:root` carries the dark-mode + violet defaults so a visitor
- * renders correctly before JS runs; the boot script in
- * layout.tsx replays the saved mode + accent before first paint.
+ * `:root` carries the light-mode + violet defaults so a visitor
+ * renders correctly before JS runs; the boot script in layout.tsx
+ * replays the saved accent before first paint.
  *
  * The three `--primary-*` extras (hover / soft / soft-2) feed
  * hovered primary buttons and tinted-primary surfaces (sidebar
@@ -96,39 +99,13 @@
  * project/Color Themes.html — change one, change the other.
  * ============================================================ */
 
-/* ---- MODE: neutral surfaces ---- */
+/* ---- MODE: neutral surfaces ----
+ * Single fixed light mode — no more html[data-mode="dark"|"light"]
+ * split. Same model as the rest of the H&M Business ecosystem
+ * (Vaultex, Sealix, Acervex, Partex, Xentry): one light content
+ * canvas, no user-facing toggle. */
 
-:root,
-html[data-mode="dark"] {
-  --background: oklch(0.13 0.01 260);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.18 0.01 260);
-  --card-2: oklch(0.205 0.01 260);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.18 0.01 260);
-  --popover-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.22 0.01 260);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.22 0.01 260);
-  --muted-foreground: oklch(0.65 0.01 260);
-  --accent: oklch(0.22 0.01 260);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.28 0.01 260);
-  --input: oklch(0.28 0.01 260);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.16 0.01 260);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.22 0.01 260);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.28 0.01 260);
-}
-
-html[data-mode="light"] {
+:root {
   --background: oklch(0.99 0.002 260);
   --foreground: oklch(0.21 0.01 260);
   --card: oklch(1 0 0);
@@ -150,24 +127,26 @@ html[data-mode="light"] {
   --chart-4: oklch(0.8 0.04 260);
   --chart-5: oklch(0.87 0.03 260);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0.002 260);
+  /* Sidebar as its own visibly deeper neutral than the near-white
+   * content canvas — matching the dark-chrome-vs-lighter-content
+   * model the rest of the ecosystem uses (Vaultex, Sealix, Acervex,
+   * Partex, Xentry all keep the nav noticeably deeper-toned than the
+   * page it frames). Previously --sidebar (0.985) sat almost on top
+   * of --background (0.99) — barely distinguishable. */
+  --sidebar: oklch(0.94 0.003 260);
   --sidebar-foreground: oklch(0.21 0.01 260);
-  --sidebar-accent: oklch(0.96 0.004 260);
+  --sidebar-accent: oklch(0.915 0.004 260);
   --sidebar-accent-foreground: oklch(0.25 0.01 260);
-  --sidebar-border: oklch(0.922 0.004 260);
+  --sidebar-border: oklch(0.877 0.004 260);
 }
 
 /* ---- AUTH: fixed split-screen surfaces ----
  *
  * login/signup/forgot-password/reset-password share a persistent dark
  * brand panel + light form panel (the H&M Business ecosystem's auth
- * convention — see Orbix/Vaultex). Unlike the neutral MODE tokens
- * above, these are NOT re-defined per data-mode: the brand panel stays
- * dark and the form panel stays light regardless of the signed-in
- * dashboard's light/dark preference, since nobody has a mode
- * preference yet on the page that lets them sign in. Values mirror
- * the dark/light MODE tokens' own numbers 1:1, so this reads as "this
- * app's dark" / "this app's light" rather than a foreign palette. */
+ * convention — see Orbix/Vaultex). Kept as its own fixed pair rather
+ * than reusing --background/--sidebar directly, so the auth screens
+ * stay visually stable even if those tokens are retuned later. */
 :root {
   --auth-panel-bg: oklch(0.13 0.01 260);
   --auth-panel-foreground: oklch(0.985 0 0);

@@ -28,30 +28,20 @@ export const DEFAULT_THEME: ThemeId = "violet";
 export const STORAGE_KEY = "convix.theme";
 
 /**
- * MODE — the light/dark dimension, orthogonal to the accent theme.
- *
- * The CSS variables live in `src/app/globals.css` under
- * `html[data-mode="..."]` blocks (neutral surfaces only). Applied
- * at runtime via `document.documentElement.dataset.mode`. Dark is
- * the historical default and stays the app's identity; light is the
- * opt-in eye-strain-friendly alternative.
- *
- * Persisted under its own localStorage key so it composes freely
- * with the accent choice (you can run Violet-light or Violet-dark).
+ * MODE — used to be a user-switchable light/dark dimension, orthogonal
+ * to the accent theme. Convix now runs a single fixed light mode —
+ * the same model the rest of the H&M Business ecosystem uses (light
+ * content canvas, dark sidebar, no toggle: Vaultex, Sealix, Acervex,
+ * Partex, Xentry). `Mode` stays a type (not just the literal "light")
+ * because a few components — the toaster, the settings summary line —
+ * still branch on it for downstream rendering; there's just no longer
+ * a way to reach anything but "light".
  */
-export const MODES = ["light", "dark"] as const;
+export const MODES = ["light"] as const;
 
 export type Mode = (typeof MODES)[number];
 
-export const DEFAULT_MODE: Mode = "dark";
-
-export const MODE_STORAGE_KEY = "convix.mode";
-
-export function isMode(value: unknown): value is Mode {
-  return (
-    typeof value === "string" && (MODES as ReadonlyArray<string>).includes(value)
-  );
-}
+export const DEFAULT_MODE: Mode = "light";
 
 export interface ThemeMeta {
   id: ThemeId;
