@@ -16,5 +16,95 @@
     "ssoOr": "or",
     "ssoContinue": "Continue with {provider}",
     "ssoError": "Single sign-on failed. Try again or use your password."
+  },
+  "Dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Live analytics across conversations, contacts, deals, broadcasts, and automations.",
+    "metrics": {
+      "activeConversations": "Active Conversations",
+      "newContactsToday": "New Contacts Today",
+      "openDealsValue": "Open Deals Value",
+      "messagesSentToday": "Messages Sent Today",
+      "newTodayVsYesterday": "new today vs yesterday",
+      "vsYesterday": "vs yesterday",
+      "noChange": "No change {suffix}",
+      "openDealsCount": "{count, plural, one {# open deal} other {# open deals}}"
+    },
+    "quickActions": {
+      "newContact": "New Contact",
+      "newDeal": "New Deal",
+      "newBroadcast": "New Broadcast",
+      "newAutomation": "New Automation"
+    },
+    "conversationsChart": {
+      "title": "Conversations Over Time",
+      "subtitle": "Daily message volume by direction",
+      "rangeDays": "{days} days",
+      "emptyTitle": "No message activity in this range",
+      "emptyHint": "Send or receive messages to start populating this chart.",
+      "incoming": "Incoming",
+      "outgoing": "Outgoing",
+      "tooltipIncoming": "{count} incoming",
+      "tooltipOutgoing": "{count} outgoing",
+      "ariaLabel": "Conversations per day"
+    },
+    "pipelineDonut": {
+      "title": "Pipeline Value",
+      "subtitle": "Open deals by stage",
+      "emptyTitle": "No open deals yet",
+      "emptyHint": "Create deals in Pipelines to see stage breakdowns here.",
+      "total": "Total",
+      "dealCount": "{count, plural, one {# deal} other {# deals}}",
+      "ariaLabel": "Pipeline value by stage"
+    },
+    "responseTime": {
+      "title": "Average First Response Time",
+      "subtitle": "Minutes to reply to a customer's first unreplied message, by weekday",
+      "target": "target {minutes}m",
+      "thisWeek": "This week:",
+      "lastWeek": "Last week:",
+      "emptyTitle": "No replies recorded yet",
+      "emptyHint": "This chart fills in as you reply to customer messages.",
+      "avgMinutesCategory": "Avg minutes",
+      "weekday0": "Mon",
+      "weekday1": "Tue",
+      "weekday2": "Wed",
+      "weekday3": "Thu",
+      "weekday4": "Fri",
+      "weekday5": "Sat",
+      "weekday6": "Sun"
+    },
+    "activityFeed": {
+      "title": "Recent Activity",
+      "viewAll": "View all",
+      "emptyTitle": "No activity yet",
+      "emptyHint": "Activity from messages, deals, broadcasts, and automations will appear here.",
+      "showing": "Showing {visible} of {total}",
+      "show": "Show",
+      "newMessageFrom": "New message from {name}",
+      "newContact": "New contact: {name}",
+      "dealInStage": "Deal \"{title}\" in {stage}",
+      "dealUpdated": "Deal \"{title}\" updated",
+      "broadcastSentTo": "sent to {count} contacts",
+      "broadcastStatusRecipients": "{status} ({count} recipients)",
+      "broadcastLine": "Broadcast \"{name}\" {label}",
+      "automationTriggered": "Automation \"{name}\" triggered for {who}",
+      "automationFailed": "Automation \"{name}\" failed for {who}",
+      "unknown": "Unknown",
+      "aContact": "a contact",
+      "automationDefaultName": "Automation",
+      "statusDraft": "draft",
+      "statusScheduled": "scheduled",
+      "statusSending": "sending",
+      "statusSent": "sent",
+      "statusFailed": "failed",
+      "secondsAgo": "{count}s ago",
+      "minutesAgo": "{count}m ago",
+      "hoursAgo": "{count}h ago",
+      "daysAgo": "{count}d ago"
+    },
+    "emptyState": {
+      "notEnoughData": "Not enough data yet"
+    }
   }
 }

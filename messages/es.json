@@ -16,5 +16,95 @@
     "ssoOr": "o",
     "ssoContinue": "Continuar con {provider}",
     "ssoError": "El inicio de sesión único falló. Intenta de nuevo o usa tu contraseña."
+  },
+  "Dashboard": {
+    "title": "Panel",
+    "subtitle": "Analítica en vivo de conversaciones, contactos, negocios, difusiones y automatizaciones.",
+    "metrics": {
+      "activeConversations": "Conversaciones activas",
+      "newContactsToday": "Nuevos contactos hoy",
+      "openDealsValue": "Valor de negocios abiertos",
+      "messagesSentToday": "Mensajes enviados hoy",
+      "newTodayVsYesterday": "nuevos hoy vs. ayer",
+      "vsYesterday": "vs. ayer",
+      "noChange": "Sin cambios {suffix}",
+      "openDealsCount": "{count, plural, one {# negocio abierto} other {# negocios abiertos}}"
+    },
+    "quickActions": {
+      "newContact": "Nuevo contacto",
+      "newDeal": "Nuevo negocio",
+      "newBroadcast": "Nueva difusión",
+      "newAutomation": "Nueva automatización"
+    },
+    "conversationsChart": {
+      "title": "Conversaciones en el tiempo",
+      "subtitle": "Volumen diario de mensajes por dirección",
+      "rangeDays": "{days} días",
+      "emptyTitle": "Sin actividad de mensajes en este rango",
+      "emptyHint": "Envía o recibe mensajes para empezar a completar este gráfico.",
+      "incoming": "Entrantes",
+      "outgoing": "Salientes",
+      "tooltipIncoming": "{count} entrantes",
+      "tooltipOutgoing": "{count} salientes",
+      "ariaLabel": "Conversaciones por día"
+    },
+    "pipelineDonut": {
+      "title": "Valor del pipeline",
+      "subtitle": "Negocios abiertos por etapa",
+      "emptyTitle": "Aún no hay negocios abiertos",
+      "emptyHint": "Crea negocios en Pipelines para ver el detalle por etapa aquí.",
+      "total": "Total",
+      "dealCount": "{count, plural, one {# negocio} other {# negocios}}",
+      "ariaLabel": "Valor del pipeline por etapa"
+    },
+    "responseTime": {
+      "title": "Tiempo promedio de primera respuesta",
+      "subtitle": "Minutos para responder al primer mensaje sin contestar de un cliente, por día de la semana",
+      "target": "objetivo {minutes}m",
+      "thisWeek": "Esta semana:",
+      "lastWeek": "Semana pasada:",
+      "emptyTitle": "Aún no hay respuestas registradas",
+      "emptyHint": "Este gráfico se completa a medida que respondes mensajes de clientes.",
+      "avgMinutesCategory": "Minutos prom.",
+      "weekday0": "Lun",
+      "weekday1": "Mar",
+      "weekday2": "Mié",
+      "weekday3": "Jue",
+      "weekday4": "Vie",
+      "weekday5": "Sáb",
+      "weekday6": "Dom"
+    },
+    "activityFeed": {
+      "title": "Actividad reciente",
+      "viewAll": "Ver todo",
+      "emptyTitle": "Aún no hay actividad",
+      "emptyHint": "Aquí aparecerá la actividad de mensajes, negocios, difusiones y automatizaciones.",
+      "showing": "Mostrando {visible} de {total}",
+      "show": "Mostrar",
+      "newMessageFrom": "Nuevo mensaje de {name}",
+      "newContact": "Nuevo contacto: {name}",
+      "dealInStage": "Negocio \"{title}\" en {stage}",
+      "dealUpdated": "Negocio \"{title}\" actualizado",
+      "broadcastSentTo": "enviada a {count} contactos",
+      "broadcastStatusRecipients": "{status} ({count} destinatarios)",
+      "broadcastLine": "Difusión \"{name}\" {label}",
+      "automationTriggered": "Automatización \"{name}\" activada para {who}",
+      "automationFailed": "Automatización \"{name}\" falló para {who}",
+      "unknown": "Desconocido",
+      "aContact": "un contacto",
+      "automationDefaultName": "Automatización",
+      "statusDraft": "borrador",
+      "statusScheduled": "programada",
+      "statusSending": "enviando",
+      "statusSent": "enviada",
+      "statusFailed": "fallida",
+      "secondsAgo": "hace {count}s",
+      "minutesAgo": "hace {count}m",
+      "hoursAgo": "hace {count}h",
+      "daysAgo": "hace {count}d"
+    },
+    "emptyState": {
+      "notEnoughData": "Aún no hay suficientes datos"
+    }
   }
 }

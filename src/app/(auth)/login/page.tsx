@@ -80,7 +80,7 @@ function LoginPageInner() {
     <AuthLayout>
       <div className="mb-8">
         <p className="mb-2 font-mono text-xs tracking-[0.14em] text-primary uppercase">
-          Convix &middot; Sign in
+          Convix &middot; {t('signIn')}
         </p>
         <h2 className="text-2xl font-semibold tracking-tight text-auth-form-foreground">
           {inviteToken ? t('titleAccept') : t('titleWelcome')}

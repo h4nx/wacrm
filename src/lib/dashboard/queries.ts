@@ -265,7 +265,10 @@ export async function loadResponseTime(db: DB): Promise<ResponseTimeSummary> {
 
 // --- 5. Activity feed --------------------------------------------------
 
-export async function loadActivity(db: DB, limit = 20): Promise<ActivityItem[]> {
+/** Minimal shape of the `useTranslations('Dashboard.activityFeed')` return value. */
+type ActivityT = (key: string, values?: Record<string, string | number>) => string
+
+export async function loadActivity(db: DB, limit = 20, t: ActivityT): Promise<ActivityItem[]> {
   // Pull ~10 from each source (plenty of headroom after merge-sort),
   // then interleave by timestamp. The individual per-table limits
   // keep the payload small; the final limit is enforced after sort.
@@ -314,11 +317,11 @@ export async function loadActivity(db: DB, limit = 20): Promise<ActivityItem[]> 
   }>) {
     const conv = Array.isArray(m.conversations) ? m.conversations[0] : m.conversations
     const contact = Array.isArray(conv?.contacts) ? conv?.contacts[0] : conv?.contacts
-    const who = contact?.name || contact?.phone || 'Unknown'
+    const who = contact?.name || contact?.phone || t('unknown')
     items.push({
       id: `msg-${m.id}`,
       kind: 'message',
-      text: `New message from ${who}`,
+      text: t('newMessageFrom', { name: who }),
       at: m.created_at,
       href: `/inbox?c=${m.conversation_id}`,
     })
@@ -328,7 +331,7 @@ export async function loadActivity(db: DB, limit = 20): Promise<ActivityItem[]> 
     items.push({
       id: `contact-${c.id}`,
       kind: 'contact',
-      text: `New contact: ${c.name || c.phone}`,
+      text: t('newContact', { name: c.name || c.phone }),
       at: c.created_at,
       href: '/contacts',
     })
@@ -345,8 +348,8 @@ export async function loadActivity(db: DB, limit = 20): Promise<ActivityItem[]> 
       id: `deal-${d.id}`,
       kind: 'deal',
       text: stage?.name
-        ? `Deal "${d.title}" in ${stage.name}`
-        : `Deal "${d.title}" updated`,
+        ? t('dealInStage', { title: d.title, stage: stage.name })
+        : t('dealUpdated', { title: d.title }),
       at: d.updated_at,
       href: '/pipelines',
     })
@@ -361,12 +364,15 @@ export async function loadActivity(db: DB, limit = 20): Promise<ActivityItem[]> 
   }>) {
     const label =
       b.status === 'sent'
-        ? `sent to ${b.total_recipients} contacts`
-        : `${b.status} (${b.total_recipients} recipients)`
+        ? t('broadcastSentTo', { count: b.total_recipients })
+        : t('broadcastStatusRecipients', {
+            status: translateBroadcastStatus(t, b.status),
+            count: b.total_recipients,
+          })
     items.push({
       id: `broadcast-${b.id}`,
       kind: 'broadcast',
-      text: `Broadcast "${b.name}" ${label}`,
+      text: t('broadcastLine', { name: b.name, label }),
       at: b.created_at,
       href: '/broadcasts',
     })
@@ -382,12 +388,15 @@ export async function loadActivity(db: DB, limit = 20): Promise<ActivityItem[]> 
   }>) {
     const automation = Array.isArray(l.automation) ? l.automation[0] : l.automation
     const contact = Array.isArray(l.contact) ? l.contact[0] : l.contact
-    const who = contact?.name || contact?.phone || 'a contact'
-    const autoName = automation?.name || 'Automation'
+    const who = contact?.name || contact?.phone || t('aContact')
+    const autoName = automation?.name || t('automationDefaultName')
     items.push({
       id: `auto-${l.id}`,
       kind: 'automation',
-      text: `Automation "${autoName}" ${l.status === 'failed' ? 'failed for' : 'triggered for'} ${who}`,
+      text:
+        l.status === 'failed'
+          ? t('automationFailed', { name: autoName, who })
+          : t('automationTriggered', { name: autoName, who }),
       at: l.created_at,
     })
   }
@@ -395,4 +404,21 @@ export async function loadActivity(db: DB, limit = 20): Promise<ActivityItem[]> 
   return items
     .sort((a, b) => (a.at > b.at ? -1 : a.at < b.at ? 1 : 0))
     .slice(0, limit)
+}
+
+function translateBroadcastStatus(t: ActivityT, status: string): string {
+  switch (status) {
+    case 'draft':
+      return t('statusDraft')
+    case 'scheduled':
+      return t('statusScheduled')
+    case 'sending':
+      return t('statusSending')
+    case 'sent':
+      return t('statusSent')
+    case 'failed':
+      return t('statusFailed')
+    default:
+      return status
+  }
 }
